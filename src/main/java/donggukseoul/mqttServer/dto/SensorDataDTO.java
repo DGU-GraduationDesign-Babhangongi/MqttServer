@@ -8,6 +8,13 @@ import java.time.LocalDateTime;
 public class SensorDataDTO {
     private String sensorId;
     private LocalDateTime timestamp;
-    private Double value;
-    private String data;
+    private Double value; // 다른 센서 데이터의 실수 값을 저장
+
+    // AQM Scores 관련 상태
+    private String temperatureStatus;
+    private String humidityStatus;
+    private String tvocStatus;
+    private String pm25Status;
+    private String ambientNoiseStatus;
+    private String co2Status;
 }

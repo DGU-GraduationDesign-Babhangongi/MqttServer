@@ -31,7 +31,7 @@ public class SensorDataController {
         return response;
     }
 
-    @GetMapping("/sensorId")
+    @GetMapping("/byId")
     public Map<String, Object> getSensorDataBySensorId(
             @RequestParam SensorType sensorType,
             @RequestParam String sensorId,
@@ -41,6 +41,12 @@ public class SensorDataController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Map<String, Object> response = sensorDataService.getSensorDataBySensorId(sensorType,sensorId,sortBy,order,page,size);
+        return response;
+    }
+
+    @GetMapping("/recentById")
+    public Map<String, Object> getRecentSensorData(@RequestParam String sensorId) {
+        Map<String, Object> response = sensorDataService.getRecentSensorData(sensorId);
         return response;
     }
 }

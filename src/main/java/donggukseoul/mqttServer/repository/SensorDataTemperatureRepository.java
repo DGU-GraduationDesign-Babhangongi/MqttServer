@@ -9,5 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SensorDataTemperatureRepository extends JpaRepository<SensorDataTemperature, Long> {
     Page<SensorDataTemperature> findBySensorId(String sensorId, Pageable pageable);
+    SensorDataTemperature findFirstBySensorIdOrderByTimestampDesc(String sensorId);
+
 
 }
