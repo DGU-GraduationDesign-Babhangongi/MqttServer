@@ -5,10 +5,7 @@ import donggukseoul.mqttServer.enums.SortBy;
 import donggukseoul.mqttServer.enums.SortOrder;
 import donggukseoul.mqttServer.service.SensorDataService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -31,10 +28,10 @@ public class SensorDataController {
         return response;
     }
 
-    @GetMapping("/byId")
+    @GetMapping("/{sensorId}")
     public Map<String, Object> getSensorDataBySensorId(
             @RequestParam SensorType sensorType,
-            @RequestParam String sensorId,
+            @PathVariable String sensorId,
             @RequestParam(defaultValue = "TIMESTAMP") SortBy sortBy,
             @RequestParam(defaultValue = "ASC") SortOrder order,
             @RequestParam(defaultValue = "0") int page,
@@ -44,8 +41,8 @@ public class SensorDataController {
         return response;
     }
 
-    @GetMapping("/recentById")
-    public Map<String, Object> getRecentSensorData(@RequestParam String sensorId) {
+    @GetMapping("/recent/{sensorId}")
+    public Map<String, Object> getRecentSensorData(@PathVariable String sensorId) {
         Map<String, Object> response = sensorDataService.getRecentSensorData(sensorId);
         return response;
     }
