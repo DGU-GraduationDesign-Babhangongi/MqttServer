@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SensorDataService {
+    private final ClassroomRepository classroomRepository;
     private final SensorDataTemperatureRepository sensorDataTemperatureRepository;
     private final SensorDataTvocRepository sensorDataTvocRepository;
     private final SensorDataAmbientNoiseRepository sensorDataAmbientNoiseRepository;
@@ -191,6 +192,26 @@ public class SensorDataService {
         return response;
     }
 
+    public Map<String, Object> getSensorDataByBuildingAndName(
+            SensorType sensorType,
+            String building,
+            String name,
+            SortBy sortBy,
+            SortOrder order,
+            int page,
+            int size
+    ) {
+
+        String sensorId = classroomRepository.findSensorIdByBuildingAndName(building, name);
+        if (sensorId == null) {
+            throw new IllegalArgumentException("No sensor found for the given classroom.");
+        }
+
+        Map<String, Object> response = getSensorDataBySensorId(sensorType, sensorId, sortBy, order, page, size);
+
+        return response;
+    }
+
     public Map<String, Object> getRecentSensorData(String sensorId) {
         Map<String, Object> response = new HashMap<>();
 
@@ -261,6 +282,14 @@ public class SensorDataService {
                     throw new IllegalArgumentException("Invalid sensor type: " + sensorType);
             }
         }
+
+        return response;
+    }
+
+    public Map<String, Object> getRecentSensorDataByBuildingAndName(String building, String name) {
+
+        String sensorId = classroomRepository.findSensorIdByBuildingAndName(building, name);
+        Map<String, Object> response = getRecentSensorData(sensorId);
 
         return response;
     }

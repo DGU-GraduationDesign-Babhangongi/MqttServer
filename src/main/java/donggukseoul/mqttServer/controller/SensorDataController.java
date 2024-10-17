@@ -41,9 +41,35 @@ public class SensorDataController {
         return response;
     }
 
+    @GetMapping("/classroom")
+    public Map<String, Object> getSensorDataByBuildingAndName(
+            @RequestParam SensorType sensorType,
+            @RequestParam String building,
+            @RequestParam String name,
+            @RequestParam(defaultValue = "TIMESTAMP") SortBy sortBy,
+            @RequestParam(defaultValue = "ASC") SortOrder order,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Map<String, Object> response = sensorDataService.getSensorDataByBuildingAndName(sensorType,building,name,sortBy,order,page,size);
+        return response;
+    }
+
     @GetMapping("/recent/{sensorId}")
     public Map<String, Object> getRecentSensorData(@PathVariable String sensorId) {
         Map<String, Object> response = sensorDataService.getRecentSensorData(sensorId);
         return response;
     }
+
+    @GetMapping("/recent/classroom")
+    public Map<String, Object> getRecentSensorDataByBuildingAndName(
+            @RequestParam String building,
+            @RequestParam String name
+    ) {
+
+        Map<String, Object> response = sensorDataService.getRecentSensorDataByBuildingAndName(building, name);
+
+        return response;
+    }
+
 }
