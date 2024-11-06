@@ -17,10 +17,10 @@ public class JoinService {
 
     public void joinProcess(JoinDTO joinDTO) {
 
-        String username = joinDTO.getUsername();
-        String password = joinDTO.getPassword();
+//        String username = joinDTO.getUsername();
+//        String password = joinDTO.getPassword();
 
-        Boolean isExist = userRepository.existsByUsername(username);
+        Boolean isExist = userRepository.existsByUsername(joinDTO.getUsername());
 
         if (isExist){
 
@@ -29,8 +29,13 @@ public class JoinService {
 
         User data = new User();
 
-        data.setUsername(username);
-        data.setPassword(bCryptPasswordEncoder.encode(password));
+        data.setUsername(joinDTO.getUsername());
+        data.setPassword(bCryptPasswordEncoder.encode(joinDTO.getPassword()));
+        data.setEmail(joinDTO.getEmail());
+        data.setPhoneNumber(joinDTO.getPhoneNumber());
+        data.setJurisdiction(joinDTO.getJurisdiction());
+//        data.setSecurityCode(joinDTO.getSecurityCode());
+        data.setAlarmStatus(joinDTO.isAlarmStatus());
         data.setRole("ROLE_ADMIN");
 
         userRepository.save(data);

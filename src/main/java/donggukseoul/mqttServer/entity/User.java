@@ -16,7 +16,18 @@ public class User {
     private Long id;
 
     private String username;
+
     private String password;
+
+    private String email;
+
+    private String phoneNumber;
+
+    private String jurisdiction;
+
+//    private String securityCode;
+
+    private boolean alarmStatus;
 
     private String role;
 }
