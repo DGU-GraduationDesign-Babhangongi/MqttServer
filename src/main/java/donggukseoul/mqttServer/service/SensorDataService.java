@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +114,89 @@ public class SensorDataService {
 
         return response;
     }
+
+    public Map<String, Object> getSensorDataBetweenDates(
+            SensorType sensorType, String building, String name,
+            LocalDateTime startDate, LocalDateTime endDate, SortBy sortBy, SortOrder order,
+            int page, int size
+    ) {
+        // 먼저 ClassroomRepository를 통해 building과 name으로 sensorId를 조회합니다.
+        String sensorId = classroomRepository.findSensorIdByBuildingAndName(building, name);
+        if (sensorId == null) {
+            throw new IllegalArgumentException("해당 강의실에 대한 센서가 없습니다.");
+        }
+
+        // 정렬 방향 설정 및 페이징
+        Sort.Direction sortDirection = order == SortOrder.ASC ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(sortDirection, sortBy.name().toLowerCase());
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // 응답 데이터 초기화
+        Map<String, Object> response = new HashMap<>();
+        Page<?> sensorDataPage;
+
+        // 센서 타입에 따라 적절한 리포지토리에서 데이터를 조회합니다.
+        switch (sensorType) {
+            case TEMPERATURE:
+                sensorDataPage = sensorDataTemperatureRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                response.put("sensorType", "Temperature");
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
+                break;
+            case TVOC:
+                sensorDataPage = sensorDataTvocRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                response.put("sensorType", "TVOC");
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
+                break;
+            case AMBIENTNOISE:
+                sensorDataPage = sensorDataAmbientNoiseRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                response.put("sensorType", "AmbientNoise");
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
+                break;
+            case IAQINDEX:
+                sensorDataPage = sensorDataIaqIndexRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                response.put("sensorType", "IAQIndex");
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
+                break;
+            case AQMSCORES:
+                sensorDataPage = sensorDataAqmScoresRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                response.put("sensorType", "AQMScores");
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
+                break;
+            case HUMIDITY:
+                sensorDataPage = sensorDataHumidityRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                response.put("sensorType", "Humidity");
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
+                break;
+            case USBPOWERED:
+                sensorDataPage = sensorDataUsbPoweredRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                response.put("sensorType", "UsbPowered");
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
+                break;
+            case BUTTONPRESSED:
+                sensorDataPage = sensorDataButtonPressedRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                response.put("sensorType", "ButtonPressed");
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
+                break;
+            case WATERDETECTION:
+                sensorDataPage = sensorDataWaterDetectionRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                response.put("sensorType", "WaterDetection");
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
+                break;
+            case PM2_5MASSCONCENTRATION:
+                sensorDataPage = sensorDataPm2_5MassConcentrationRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                response.put("sensorType", "PM2_5MassConcentration");
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
+                break;
+            default:
+                throw new IllegalArgumentException("유효하지 않은 센서 타입입니다: " + sensorType);
+        }
+
+        return response;
+    }
+
+
+
+
 
     public Map<String, Object> getSensorDataBySensorId(
             SensorType sensorType,

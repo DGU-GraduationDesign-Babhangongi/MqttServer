@@ -7,10 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+
 @Repository
 public interface SensorDataHumidityRepository extends JpaRepository<SensorDataHumidity, Long> {
     Page<SensorDataHumidity> findBySensorId(String sensorId, Pageable pageable);
     SensorDataHumidity findFirstBySensorIdOrderByTimestampDesc(String sensorId);
 
-
+    Page<?> findBySensorIdAndTimestampBetween(String sensorId, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 }

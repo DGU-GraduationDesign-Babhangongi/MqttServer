@@ -7,6 +7,7 @@ import donggukseoul.mqttServer.service.SensorDataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
@@ -52,6 +53,24 @@ public class SensorDataController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Map<String, Object> response = sensorDataService.getSensorDataByBuildingAndName(sensorType,building,name,sortBy,order,page,size);
+        return response;
+    }
+
+    @GetMapping("/classroom/betweenDates")
+    public Map<String, Object> getSensorDataBetweenDates(
+            @RequestParam SensorType sensorType,
+            @RequestParam String building,
+            @RequestParam String name,
+            @RequestParam LocalDateTime startDate,
+            @RequestParam LocalDateTime endDate,
+            @RequestParam(defaultValue = "TIMESTAMP") SortBy sortBy,
+            @RequestParam(defaultValue = "ASC") SortOrder order,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Map<String, Object> response = sensorDataService.getSensorDataBetweenDates(
+                sensorType, building, name, startDate, endDate, sortBy, order, page, size
+        );
         return response;
     }
 
