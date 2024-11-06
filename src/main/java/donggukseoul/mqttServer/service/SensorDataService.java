@@ -3,6 +3,7 @@ package donggukseoul.mqttServer.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import donggukseoul.mqttServer.dto.AqmScoreDTO;
 import donggukseoul.mqttServer.dto.SensorDataDTO;
 import donggukseoul.mqttServer.entity.*;
 import donggukseoul.mqttServer.enums.SensorType;
@@ -381,33 +382,39 @@ public class SensorDataService {
 
 
     // DTO 변환 메서드
-    private List<SensorDataDTO> convertToDTO(List<?> sensorDataEntities) {
+    private List<?> convertToDTO(List<?> sensorDataEntities) {
         return sensorDataEntities.stream().map(entity -> {
+            Object o = new Object();
             SensorDataDTO dto = new SensorDataDTO();
+            AqmScoreDTO dto2 = new AqmScoreDTO();
             if (entity instanceof SensorDataTemperature) {
                 SensorDataTemperature temperature = (SensorDataTemperature) entity;
                 dto.setSensorId(temperature.getSensorId());
                 dto.setTimestamp(temperature.getTimestamp());
                 dto.setValue(temperature.getValue());
+                o = dto;
             } else if (entity instanceof SensorDataTvoc) {
                 SensorDataTvoc tvoc = (SensorDataTvoc) entity;
                 dto.setSensorId(tvoc.getSensorId());
                 dto.setTimestamp(tvoc.getTimestamp());
                 dto.setValue(tvoc.getValue());
+                o = dto;
             } else if (entity instanceof SensorDataAmbientNoise) {
                 SensorDataAmbientNoise ambientNoise = (SensorDataAmbientNoise) entity;
                 dto.setSensorId(ambientNoise.getSensorId());
                 dto.setTimestamp(ambientNoise.getTimestamp());
                 dto.setValue(ambientNoise.getValue());
+                o = dto;
             } else if (entity instanceof SensorDataIaqIndex) {
                 SensorDataIaqIndex iaqIndex = (SensorDataIaqIndex) entity;
                 dto.setSensorId(iaqIndex.getSensorId());
                 dto.setTimestamp(iaqIndex.getTimestamp());
                 dto.setValue(iaqIndex.getValue());
+                o = dto;
             } else if (entity instanceof SensorDataAqmScores) {
                 SensorDataAqmScores aqmScores = (SensorDataAqmScores) entity;
-                dto.setSensorId(aqmScores.getSensorId());
-                dto.setTimestamp(aqmScores.getTimestamp());
+                dto2.setSensorId(aqmScores.getSensorId());
+                dto2.setTimestamp(aqmScores.getTimestamp());
 
                 // JSON 데이터 파싱 및 DTO에 추가
                 String jsonData = aqmScores.getAqmScores();
@@ -415,12 +422,13 @@ public class SensorDataService {
                     ObjectMapper mapper = new ObjectMapper();
                     JsonNode jsonNode = mapper.readTree(jsonData);
 
-                    dto.setTemperatureStatus(jsonNode.get("temperature").asText());
-                    dto.setHumidityStatus(jsonNode.get("humidity").asText());
-                    dto.setTvocStatus(jsonNode.get("tvoc").asText());
-                    dto.setPm25Status(jsonNode.get("PM2_5MassConcentration").asText());
-                    dto.setAmbientNoiseStatus(jsonNode.get("ambientNoise").asText());
-                    dto.setCo2Status(jsonNode.get("CO2").asText());
+                    dto2.setTemperatureStatus(jsonNode.get("temperature").asText());
+                    dto2.setHumidityStatus(jsonNode.get("humidity").asText());
+                    dto2.setTvocStatus(jsonNode.get("tvoc").asText());
+                    dto2.setPm25Status(jsonNode.get("PM2_5MassConcentration").asText());
+                    dto2.setAmbientNoiseStatus(jsonNode.get("ambientNoise").asText());
+                    dto2.setCo2Status(jsonNode.get("CO2").asText());
+                    o = dto2;
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -431,58 +439,68 @@ public class SensorDataService {
                 dto.setSensorId(humidity.getSensorId());
                 dto.setTimestamp(humidity.getTimestamp());
                 dto.setValue(humidity.getValue());
+                o = dto;
             } else if (entity instanceof SensorDataUsbPowered) {
                 SensorDataUsbPowered usbPowered = (SensorDataUsbPowered) entity;
                 dto.setSensorId(usbPowered.getSensorId());
                 dto.setTimestamp(usbPowered.getTimestamp());
                 dto.setValue(usbPowered.getValue() ? 1.0 : 0.0);
+                o = dto;
             } else if (entity instanceof SensorDataButtonPressed) {
                 SensorDataButtonPressed buttonPressed = (SensorDataButtonPressed) entity;
                 dto.setSensorId(buttonPressed.getSensorId());
                 dto.setTimestamp(buttonPressed.getTimestamp());
                 dto.setValue(buttonPressed.getValue() ? 1.0 : 0.0);
+                o = dto;
             } else if (entity instanceof SensorDataWaterDetection) {
                 SensorDataWaterDetection waterDetection = (SensorDataWaterDetection) entity;
                 dto.setSensorId(waterDetection.getSensorId());
                 dto.setTimestamp(waterDetection.getTimestamp());
                 dto.setValue(waterDetection.getValue() ? 1.0 : 0.0);
+                o = dto;
             } else if (entity instanceof SensorDataPm2_5MassConcentration) {
                 SensorDataPm2_5MassConcentration pm25 = (SensorDataPm2_5MassConcentration) entity;
                 dto.setSensorId(pm25.getSensorId());
                 dto.setTimestamp(pm25.getTimestamp());
                 dto.setValue(pm25.getValue());
+                o = dto;
             }
-            return dto;
+            return o;
         }).collect(Collectors.toList());
     }
 
-    private SensorDataDTO convertToDTO(Object entity) {
+    private Object convertToDTO(Object entity) {
+        Object o = new Object();
         SensorDataDTO dto = new SensorDataDTO();
-
+        AqmScoreDTO dto2 = new AqmScoreDTO();
         if (entity instanceof SensorDataTemperature) {
             SensorDataTemperature temperature = (SensorDataTemperature) entity;
             dto.setSensorId(temperature.getSensorId());
             dto.setTimestamp(temperature.getTimestamp());
             dto.setValue(temperature.getValue());
+            o = dto;
         } else if (entity instanceof SensorDataTvoc) {
             SensorDataTvoc tvoc = (SensorDataTvoc) entity;
             dto.setSensorId(tvoc.getSensorId());
             dto.setTimestamp(tvoc.getTimestamp());
             dto.setValue(tvoc.getValue());
+            o = dto;
         } else if (entity instanceof SensorDataAmbientNoise) {
             SensorDataAmbientNoise ambientNoise = (SensorDataAmbientNoise) entity;
             dto.setSensorId(ambientNoise.getSensorId());
             dto.setTimestamp(ambientNoise.getTimestamp());
             dto.setValue(ambientNoise.getValue());
+            o = dto;
         } else if (entity instanceof SensorDataIaqIndex) {
             SensorDataIaqIndex iaqIndex = (SensorDataIaqIndex) entity;
             dto.setSensorId(iaqIndex.getSensorId());
             dto.setTimestamp(iaqIndex.getTimestamp());
             dto.setValue(iaqIndex.getValue());
+            o = dto;
         } else if (entity instanceof SensorDataAqmScores) {
             SensorDataAqmScores aqmScores = (SensorDataAqmScores) entity;
-            dto.setSensorId(aqmScores.getSensorId());
-            dto.setTimestamp(aqmScores.getTimestamp());
+            dto2.setSensorId(aqmScores.getSensorId());
+            dto2.setTimestamp(aqmScores.getTimestamp());
 
             // JSON 데이터 파싱 및 DTO에 추가
             String jsonData = aqmScores.getAqmScores();
@@ -490,12 +508,13 @@ public class SensorDataService {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode jsonNode = mapper.readTree(jsonData);
 
-                dto.setTemperatureStatus(jsonNode.get("temperature").asText());
-                dto.setHumidityStatus(jsonNode.get("humidity").asText());
-                dto.setTvocStatus(jsonNode.get("tvoc").asText());
-                dto.setPm25Status(jsonNode.get("PM2_5MassConcentration").asText());
-                dto.setAmbientNoiseStatus(jsonNode.get("ambientNoise").asText());
-                dto.setCo2Status(jsonNode.get("CO2").asText());
+                dto2.setTemperatureStatus(jsonNode.get("temperature").asText());
+                dto2.setHumidityStatus(jsonNode.get("humidity").asText());
+                dto2.setTvocStatus(jsonNode.get("tvoc").asText());
+                dto2.setPm25Status(jsonNode.get("PM2_5MassConcentration").asText());
+                dto2.setAmbientNoiseStatus(jsonNode.get("ambientNoise").asText());
+                dto2.setCo2Status(jsonNode.get("CO2").asText());
+                o = dto2;
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -506,29 +525,34 @@ public class SensorDataService {
             dto.setSensorId(humidity.getSensorId());
             dto.setTimestamp(humidity.getTimestamp());
             dto.setValue(humidity.getValue());
+            o = dto;
         } else if (entity instanceof SensorDataUsbPowered) {
             SensorDataUsbPowered usbPowered = (SensorDataUsbPowered) entity;
             dto.setSensorId(usbPowered.getSensorId());
             dto.setTimestamp(usbPowered.getTimestamp());
             dto.setValue(usbPowered.getValue() ? 1.0 : 0.0); // Boolean 값을 Double로 변환
+            o = dto;
         } else if (entity instanceof SensorDataButtonPressed) {
             SensorDataButtonPressed buttonPressed = (SensorDataButtonPressed) entity;
             dto.setSensorId(buttonPressed.getSensorId());
             dto.setTimestamp(buttonPressed.getTimestamp());
             dto.setValue(buttonPressed.getValue() ? 1.0 : 0.0); // Boolean 값을 Double로 변환
+            o = dto;
         } else if (entity instanceof SensorDataWaterDetection) {
             SensorDataWaterDetection waterDetection = (SensorDataWaterDetection) entity;
             dto.setSensorId(waterDetection.getSensorId());
             dto.setTimestamp(waterDetection.getTimestamp());
             dto.setValue(waterDetection.getValue() ? 1.0 : 0.0); // Boolean 값을 Double로 변환
+            o = dto;
         } else if (entity instanceof SensorDataPm2_5MassConcentration) {
             SensorDataPm2_5MassConcentration pm2_5 = (SensorDataPm2_5MassConcentration) entity;
             dto.setSensorId(pm2_5.getSensorId());
             dto.setTimestamp(pm2_5.getTimestamp());
             dto.setValue(pm2_5.getValue());
+            o = dto;
         }
 
-        return dto;
+        return o;
     }
 
 
