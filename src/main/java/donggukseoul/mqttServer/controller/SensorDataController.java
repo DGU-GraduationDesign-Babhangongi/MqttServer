@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -58,7 +60,7 @@ public class SensorDataController {
 
     @GetMapping("/classroom/betweenDates")
     public Map<String, Object> getSensorDataBetweenDates(
-            @RequestParam SensorType sensorType,
+            @RequestParam List<SensorType> sensorTypes,
             @RequestParam String building,
             @RequestParam String name,
             @RequestParam LocalDateTime startDate,
@@ -68,9 +70,14 @@ public class SensorDataController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Map<String, Object> response = sensorDataService.getSensorDataBetweenDates(
-                sensorType, building, name, startDate, endDate, sortBy, order, page, size
-        );
+        Map<String, Object> response = new HashMap<>();
+
+        for (SensorType sensorType : sensorTypes) {
+            Map<String, Object> sensorData = sensorDataService.getSensorDataBetweenDates(
+                    sensorType, building, name, startDate, endDate, sortBy, order, page, size);
+            response.put(sensorType.name(), sensorData);
+        }
+
         return response;
     }
 
