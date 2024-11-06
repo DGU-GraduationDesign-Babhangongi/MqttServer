@@ -33,7 +33,7 @@ public class JoinService {
         data.setPassword(bCryptPasswordEncoder.encode(joinDTO.getPassword()));
         data.setEmail(joinDTO.getEmail());
         data.setPhoneNumber(joinDTO.getPhoneNumber());
-        data.setJurisdiction(joinDTO.getJurisdiction());
+        data.setAreaOfResponsibility(joinDTO.getAreaOfResponsibility());
 //        data.setSecurityCode(joinDTO.getSecurityCode());
         data.setAlarmStatus(joinDTO.isAlarmStatus());
         data.setRole("ROLE_ADMIN");

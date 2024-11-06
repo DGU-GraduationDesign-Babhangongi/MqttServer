@@ -15,7 +15,7 @@ public class JoinDTO {
 
     private String phoneNumber;
 
-    private String jurisdiction;
+    private String areaOfResponsibility;
 
     private String securityCode;
 
