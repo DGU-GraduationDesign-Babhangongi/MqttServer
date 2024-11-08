@@ -1,6 +1,7 @@
 package donggukseoul.mqttServer.enums;
 
 public enum SensorType {
+    ALL,
     TEMPERATURE,
     TVOC,
     AMBIENTNOISE,
@@ -11,4 +12,6 @@ public enum SensorType {
     BUTTONPRESSED,
     WATERDETECTION,
     PM2_5MASSCONCENTRATION;
+
+
 }
