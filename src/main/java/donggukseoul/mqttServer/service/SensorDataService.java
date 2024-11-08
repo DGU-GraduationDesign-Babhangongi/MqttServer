@@ -146,6 +146,76 @@ public class SensorDataService {
         return response;
     }
 
+    public Map<String, Object> getCombinedSensorData(List<SensorType> sensorTypes, String building, String name, LocalDateTime startDate, LocalDateTime endDate, SortOrder order, int page, int size) {
+        Map<String, Object> response = new HashMap<>();
+        List<SensorDataDTO> combinedData = new ArrayList<>();
+        Pageable pageable = PageRequest.of(page, size);
+
+        String sensorId = classroomRepository.findSensorIdByBuildingAndName(building, name);
+        if (sensorId == null) {
+            throw new IllegalArgumentException("해당 강의실에 대한 센서가 없습니다.");
+        }
+
+        for (SensorType sensorType : sensorTypes) {
+            switch (sensorType) {
+                case ALL:
+
+                    combinedData.addAll(sensorDataTemperatureRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable).getContent());
+                    combinedData.addAll(sensorDataTvocRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable).getContent());
+                    combinedData.addAll(sensorDataAmbientNoiseRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable).getContent());
+                    combinedData.addAll(sensorDataHumidityRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable).getContent());
+                    combinedData.addAll(sensorDataPm2_5MassConcentrationRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable).getContent());
+                    response.put("sensorType", "ALL");
+                    break;
+                case TEMPERATURE:
+                    Page<SensorDataDTO> temperatureData = sensorDataTemperatureRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                    combinedData.addAll(temperatureData.getContent());
+                    response.put("sensorType", "TEMPERATURE");
+                    break;
+                case TVOC:
+                    Page<SensorDataDTO> tvocData = sensorDataTvocRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                    combinedData.addAll(tvocData.getContent());
+                    response.put("sensorType", "TVOC");
+                    break;
+                case AMBIENTNOISE:
+                    Page<SensorDataDTO> ambientNoiseData = sensorDataAmbientNoiseRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                    combinedData.addAll(ambientNoiseData.getContent());
+                    response.put("sensorType", "AMBIENTNOISE");
+                    break;
+                case HUMIDITY:
+                    Page<SensorDataDTO> humidityData = sensorDataHumidityRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                    combinedData.addAll(humidityData.getContent());
+                    response.put("sensorType", "HUMIDITY");
+                    break;
+                case PM2_5MASSCONCENTRATION:
+                    Page<SensorDataDTO> pm25Data = sensorDataPm2_5MassConcentrationRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                    combinedData.addAll(pm25Data.getContent());
+                    response.put("sensorType", "PM2_5MASSCONCENTRATION");
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported sensor type: " + sensorType);
+            }
+        }
+
+        // 최종적으로 가져온 데이터를 timestamp 순서대로 정렬
+        if (order == SortOrder.ASC) {
+            combinedData.sort(Comparator.comparing(SensorDataDTO::getTimestamp));
+        } else {
+            combinedData.sort(Comparator.comparing(SensorDataDTO::getTimestamp).reversed());
+        }
+
+        // 페이징 처리된 데이터와 메타 정보를 response에 추가
+        response.put("data", combinedData);
+        response.put("currentPage", page);
+        response.put("pageSize", size);
+
+        return response;
+    }
+
+
+
+
+
     public Map<String, Object> getSensorDataBetweenDates(
             SensorType sensorType, String building, String name,
             LocalDateTime startDate, LocalDateTime endDate, SortBy sortBy, SortOrder order,
@@ -169,24 +239,24 @@ public class SensorDataService {
 
         // 센서 타입에 따라 적절한 리포지토리에서 데이터를 조회합니다.
         switch (sensorType) {
-            case ALL:
-                List<SensorDataDTO> combinedData = new ArrayList<>();
-
-                combinedData.addAll(sensorDataTemperatureRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
-                combinedData.addAll(sensorDataTvocRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
-                combinedData.addAll(sensorDataAmbientNoiseRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
-                combinedData.addAll(sensorDataHumidityRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
-                combinedData.addAll(sensorDataPm2_5MassConcentrationRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
-
-                if (order == SortOrder.ASC) {
-                    combinedData.sort(Comparator.comparing(SensorDataDTO::getTimestamp));
-                } else {
-                    combinedData.sort(Comparator.comparing(SensorDataDTO::getTimestamp).reversed());
-                }
-
-                response.put("sensorType", "ALL");
-                response.put("data", combinedData);
-                break;
+//            case ALL:
+//                List<SensorDataDTO> combinedData = new ArrayList<>();
+//
+//                combinedData.addAll(sensorDataTemperatureRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
+//                combinedData.addAll(sensorDataTvocRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
+//                combinedData.addAll(sensorDataAmbientNoiseRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
+//                combinedData.addAll(sensorDataHumidityRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
+//                combinedData.addAll(sensorDataPm2_5MassConcentrationRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
+//
+//                if (order == SortOrder.ASC) {
+//                    combinedData.sort(Comparator.comparing(SensorDataDTO::getTimestamp));
+//                } else {
+//                    combinedData.sort(Comparator.comparing(SensorDataDTO::getTimestamp).reversed());
+//                }
+//
+//                response.put("sensorType", "ALL");
+//                response.put("data", combinedData);
+//                break;
             case TEMPERATURE:
                 sensorDataPage = sensorDataTemperatureRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "Temperature");

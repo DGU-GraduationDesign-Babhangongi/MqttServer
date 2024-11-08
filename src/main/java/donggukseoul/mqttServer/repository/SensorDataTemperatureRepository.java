@@ -19,12 +19,20 @@ public interface SensorDataTemperatureRepository extends JpaRepository<SensorDat
 
     SensorDataTemperature findFirstBySensorIdOrderByTimestampDesc(String sensorId);
 
+//    @Query("SELECT new donggukseoul.mqttServer.dto.SensorDataDTO(sd.sensorId, sd.timestamp, sd.value, 'Temperature') " +
+//            "FROM SensorDataTemperature sd WHERE sd.sensorId = :sensorId AND sd.timestamp BETWEEN :startDate AND :endDate")
+//    List<SensorDataDTO> findAllBySensorIdAndTimestampBetween(
+//            @Param("sensorId") String sensorId,
+//            @Param("startDate") LocalDateTime startDate,
+//            @Param("endDate") LocalDateTime endDate);
+
     @Query("SELECT new donggukseoul.mqttServer.dto.SensorDataDTO(sd.sensorId, sd.timestamp, sd.value, 'Temperature') " +
             "FROM SensorDataTemperature sd WHERE sd.sensorId = :sensorId AND sd.timestamp BETWEEN :startDate AND :endDate")
-    List<SensorDataDTO> findAllBySensorIdAndTimestampBetween(
+    Page<SensorDataDTO> findAllBySensorIdAndTimestampBetween(
             @Param("sensorId") String sensorId,
             @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate);
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable);
 
     Page<?> findBySensorIdAndTimestampBetween(String sensorId, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 

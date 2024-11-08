@@ -65,20 +65,25 @@ public class SensorDataController {
             @RequestParam String name,
             @RequestParam LocalDateTime startDate,
             @RequestParam LocalDateTime endDate,
-            @RequestParam(defaultValue = "TIMESTAMP") SortBy sortBy,
             @RequestParam(defaultValue = "ASC") SortOrder order,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Map<String, Object> response = new HashMap<>();
+//        Map<String, Object> response = new HashMap<>();
+//
+//        for (SensorType sensorType : sensorTypes) {
+//            Map<String, Object> sensorData = sensorDataService.getSensorDataBetweenDates(
+//                    sensorType, building, name, startDate, endDate, sortBy, order, page, size);
+//            response.put(sensorType.name(), sensorData);
+//        }
+//
+//        return response;
 
-        for (SensorType sensorType : sensorTypes) {
-            Map<String, Object> sensorData = sensorDataService.getSensorDataBetweenDates(
-                    sensorType, building, name, startDate, endDate, sortBy, order, page, size);
-            response.put(sensorType.name(), sensorData);
-        }
+//        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> sensorData = sensorDataService.getCombinedSensorData(sensorTypes, building, name, startDate, endDate, order, page, size);
 
-        return response;
+        return sensorData;
+
     }
 
     @GetMapping("/recent/{sensorId}")
