@@ -31,8 +31,9 @@ public class JoinService {
 
         data.setUsername(joinDTO.getUsername());
         data.setPassword(bCryptPasswordEncoder.encode(joinDTO.getPassword()));
+        data.setNickname(joinDTO.getNickname());
         data.setEmail(joinDTO.getEmail());
-        data.setPhoneNumber(joinDTO.getPhoneNumber());
+//        data.setPhoneNumber(joinDTO.getPhoneNumber());
         data.setAreaOfResponsibility(joinDTO.getAreaOfResponsibility());
 //        data.setSecurityCode(joinDTO.getSecurityCode());
         data.setAlarmStatus(joinDTO.isAlarmStatus());
