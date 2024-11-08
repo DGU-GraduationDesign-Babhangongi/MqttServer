@@ -188,54 +188,54 @@ public class SensorDataService {
                 response.put("data", combinedData);
                 break;
             case TEMPERATURE:
-                sensorDataPage = sensorDataTvocRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
+                sensorDataPage = sensorDataTemperatureRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "Temperature");
-                response.put("data", sensorDataPage);
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
                 break;
             case TVOC:
                 sensorDataPage = sensorDataTvocRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "TVOC");
-                response.put("data", sensorDataPage);
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
                 break;
             case AMBIENTNOISE:
                 sensorDataPage = sensorDataAmbientNoiseRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "AmbientNoise");
-                response.put("data", sensorDataPage);
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
                 break;
             case IAQINDEX:
                 sensorDataPage = sensorDataIaqIndexRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "IAQIndex");
-                response.put("data", sensorDataPage);
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
                 break;
             case AQMSCORES:
                 sensorDataPage = sensorDataAqmScoresRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "AQMScores");
-                response.put("data", sensorDataPage);
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
                 break;
             case HUMIDITY:
                 sensorDataPage = sensorDataHumidityRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "Humidity");
-                response.put("data", sensorDataPage);
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
                 break;
             case USBPOWERED:
                 sensorDataPage = sensorDataUsbPoweredRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "UsbPowered");
-                response.put("data", sensorDataPage);
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
                 break;
             case BUTTONPRESSED:
                 sensorDataPage = sensorDataButtonPressedRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "ButtonPressed");
-                response.put("data", sensorDataPage);
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
                 break;
             case WATERDETECTION:
                 sensorDataPage = sensorDataWaterDetectionRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "WaterDetection");
-                response.put("data", sensorDataPage);
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
                 break;
             case PM2_5MASSCONCENTRATION:
                 sensorDataPage = sensorDataPm2_5MassConcentrationRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "PM2_5MassConcentration");
-                response.put("data", sensorDataPage);
+                response.put("data", convertToDTO(sensorDataPage.getContent()));
                 break;
             default:
                 throw new IllegalArgumentException("유효하지 않은 센서 타입입니다: " + sensorType);
