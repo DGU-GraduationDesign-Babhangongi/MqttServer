@@ -64,7 +64,7 @@ public class MqttSubscriber {
         try {
             // MQTT 브로커 주소와 클라이언트 ID 설정
             String brokerUrl = "tcp://donggukseoul.com:1883"; // 여기에 실제 브로커 주소를 입력하세요
-            String clientId = "test"; // 여기에 실제 클라이언트 ID를 입력하세요
+            String clientId = "auddn207"; // 여기에 실제 클라이언트 ID를 입력하세요
 
             mqttClient = new MqttClient(brokerUrl, clientId);
             MqttConnectOptions options = new MqttConnectOptions();
