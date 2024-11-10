@@ -1,19 +1,23 @@
 package donggukseoul.mqttServer.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import donggukseoul.mqttServer.dto.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -24,9 +28,21 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        String username = obtainUsername(request);
-        String password = obtainPassword(request);
+        String username = null;
+        String password = null;
 
+        if ("application/json".equals(request.getContentType())) {
+            try {
+                Map<String, String> requestBody = new ObjectMapper().readValue(request.getInputStream(), Map.class);
+                username = requestBody.get("username");
+                password = requestBody.get("password");
+            } catch (IOException e) {
+                throw new AuthenticationServiceException("Invalid JSON request body");
+            }
+        } else {
+            username = obtainUsername(request);
+            password = obtainPassword(request);
+        }
         System.out.println(username);
 
 //        DTO처리

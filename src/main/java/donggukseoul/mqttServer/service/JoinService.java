@@ -81,6 +81,8 @@ public class JoinService {
 
 
         String nickname = userRepository.findByUsername(username).getNickname();
+//        System.out.println("user is null");
+
         return nickname;
     }
 
