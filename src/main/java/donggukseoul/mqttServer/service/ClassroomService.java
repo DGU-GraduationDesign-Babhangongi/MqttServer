@@ -108,6 +108,7 @@ public class ClassroomService {
                 .floor(classroom.getFloor())
                 .building(classroom.getBuilding())
                 .sensorId(classroom.getSensorId())
+                .sensorType(classroom.getSensorType())
                 .isFavorited(isFavorited) // 즐겨찾기 여부 설정
                 .build();
     }
@@ -120,6 +121,7 @@ public class ClassroomService {
                 .floor(classroomCreateDto.getFloor())
                 .building(classroomCreateDto.getBuilding())
                 .sensorId(classroomCreateDto.getSensorId())  // sensorId는 null일 수 있음
+                .sensorType(classroomCreateDto.getSensorType())
                 .build();
         classroomRepository.save(classroom);
 
@@ -221,6 +223,7 @@ public class ClassroomService {
                 .floor(classroom.getFloor())
                 .building(classroom.getBuilding())
                 .sensorId(classroom.getSensorId())
+                .sensorType(classroom.getSensorType())
                 .build();
     }
 }

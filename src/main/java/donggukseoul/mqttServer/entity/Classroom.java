@@ -25,6 +25,7 @@ public class Classroom {
     private Integer floor;
     private String building;
     private String sensorId;
+    private String sensorType;
 
     @ManyToMany
     @JoinTable(

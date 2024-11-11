@@ -15,4 +15,5 @@ public class ClassroomCreateDTO {  // ID 없이 생성할 DTO
     private Integer floor;
     private String building;
     private String sensorId;  // Sensor ID는 nullable
+    private String sensorType;
 }
