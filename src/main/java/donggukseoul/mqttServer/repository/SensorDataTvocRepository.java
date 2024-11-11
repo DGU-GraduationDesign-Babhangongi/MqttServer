@@ -26,11 +26,10 @@ public interface SensorDataTvocRepository extends JpaRepository<SensorDataTvoc, 
 
     @Query("SELECT new donggukseoul.mqttServer.dto.SensorDataDTO(sd.sensorId, sd.timestamp, sd.value, 'TVOC') " +
             "FROM SensorDataTvoc sd WHERE sd.sensorId = :sensorId AND sd.timestamp BETWEEN :startDate AND :endDate")
-    Page<SensorDataDTO> findAllBySensorIdAndTimestampBetween(
+    List<SensorDataDTO> findAllBySensorIdAndTimestampBetween(
             @Param("sensorId") String sensorId,
             @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate,
-            Pageable pageable);
+            @Param("endDate") LocalDateTime endDate);
 
     Page<?> findBySensorIdAndTimestampBetween(String sensorId, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 }

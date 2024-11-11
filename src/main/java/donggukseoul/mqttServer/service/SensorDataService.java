@@ -150,13 +150,6 @@ public class SensorDataService {
         Map<String, Object> response = new HashMap<>();
         List<SensorDataDTO> combinedData = new ArrayList<>();
 
-        Sort.Direction sortDirection = order == SortOrder.ASC ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(sortDirection, "timestamp");
-
-        // Pageable 객체 생성 (페이징 및 정렬)
-        Pageable pageable = PageRequest.of(page, size, sort);
-//        Pageable pageable = PageRequest.of(page, size);
-
         String sensorId = classroomRepository.findSensorIdByBuildingAndName(building, name);
         if (sensorId == null) {
             throw new IllegalArgumentException("해당 강의실에 대한 센서가 없습니다.");
@@ -165,37 +158,31 @@ public class SensorDataService {
         for (SensorType sensorType : sensorTypes) {
             switch (sensorType) {
                 case ALL:
-
-                    combinedData.addAll(sensorDataTemperatureRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable).getContent());
-                    combinedData.addAll(sensorDataTvocRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable).getContent());
-                    combinedData.addAll(sensorDataAmbientNoiseRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable).getContent());
-                    combinedData.addAll(sensorDataHumidityRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable).getContent());
-                    combinedData.addAll(sensorDataPm2_5MassConcentrationRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable).getContent());
+                    combinedData.addAll(sensorDataTemperatureRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
+                    combinedData.addAll(sensorDataTvocRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
+                    combinedData.addAll(sensorDataAmbientNoiseRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
+                    combinedData.addAll(sensorDataHumidityRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
+                    combinedData.addAll(sensorDataPm2_5MassConcentrationRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
                     response.put("sensorType", "ALL");
                     break;
                 case TEMPERATURE:
-                    Page<SensorDataDTO> temperatureData = sensorDataTemperatureRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
-                    combinedData.addAll(temperatureData.getContent());
+                    combinedData.addAll(sensorDataTemperatureRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
                     response.put("sensorType", "TEMPERATURE");
                     break;
                 case TVOC:
-                    Page<SensorDataDTO> tvocData = sensorDataTvocRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
-                    combinedData.addAll(tvocData.getContent());
+                    combinedData.addAll(sensorDataTvocRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
                     response.put("sensorType", "TVOC");
                     break;
                 case AMBIENTNOISE:
-                    Page<SensorDataDTO> ambientNoiseData = sensorDataAmbientNoiseRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
-                    combinedData.addAll(ambientNoiseData.getContent());
+                    combinedData.addAll(sensorDataAmbientNoiseRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
                     response.put("sensorType", "AMBIENTNOISE");
                     break;
                 case HUMIDITY:
-                    Page<SensorDataDTO> humidityData = sensorDataHumidityRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
-                    combinedData.addAll(humidityData.getContent());
+                    combinedData.addAll(sensorDataHumidityRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
                     response.put("sensorType", "HUMIDITY");
                     break;
                 case PM2_5MASSCONCENTRATION:
-                    Page<SensorDataDTO> pm25Data = sensorDataPm2_5MassConcentrationRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
-                    combinedData.addAll(pm25Data.getContent());
+                    combinedData.addAll(sensorDataPm2_5MassConcentrationRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
                     response.put("sensorType", "PM2_5MASSCONCENTRATION");
                     break;
                 default:
@@ -204,19 +191,25 @@ public class SensorDataService {
         }
 
         // 최종적으로 가져온 데이터를 timestamp 순서대로 정렬
-        if (order == SortOrder.ASC) {
-            combinedData.sort(Comparator.comparing(SensorDataDTO::getTimestamp));
-        } else {
-            combinedData.sort(Comparator.comparing(SensorDataDTO::getTimestamp).reversed());
-        }
+        combinedData.sort(order == SortOrder.ASC ?
+                Comparator.comparing(SensorDataDTO::getTimestamp) :
+                Comparator.comparing(SensorDataDTO::getTimestamp).reversed());
 
-        // 페이징 처리된 데이터와 메타 정보를 response에 추가
-        response.put("data", combinedData);
+        // 페이징 처리
+        int start = page * size;
+        int end = Math.min(start + size, combinedData.size());
+        List<SensorDataDTO> paginatedData = combinedData.subList(start, end);
+
+        // 페이징된 데이터와 메타 정보를 response에 추가
+        response.put("data", paginatedData);
         response.put("currentPage", page);
         response.put("pageSize", size);
+        response.put("totalElements", combinedData.size());
+        response.put("totalPages", (combinedData.size() + size - 1) / size);
 
         return response;
     }
+
 
 
 
