@@ -88,8 +88,9 @@ public class ClassroomService {
             favoritedList.addAll(nonFavoritedList);
             return favoritedList;
         } else {
-            nonFavoritedList.addAll(favoritedList);
-            return nonFavoritedList;
+            return Stream.concat(favoritedList.stream(), nonFavoritedList.stream())
+                    .sorted(getNameComparator(orderDirection)) // 이름 순서 정렬
+                    .collect(Collectors.toList());
         }
     }
 
