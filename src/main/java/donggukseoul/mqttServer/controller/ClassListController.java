@@ -3,6 +3,7 @@ package donggukseoul.mqttServer.controller;
 import donggukseoul.mqttServer.dto.ClassroomCreateDTO;
 import donggukseoul.mqttServer.dto.ClassroomDTO;
 import donggukseoul.mqttServer.service.ClassroomService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,5 +47,22 @@ public class ClassListController {
     public ResponseEntity<Void> deleteClassroom(@PathVariable Long id) {
         classroomService.deleteClassroom(id);
         return ResponseEntity.noContent().build();
+    }
+
+//    @PostMapping("/{classroomId}/favorite/{userId}")
+//    public String addClassroomToFavorites(@PathVariable Long classroomId, @PathVariable Long userId) {
+//        classroomService.addClassroomToFavorites(classroomId, userId);
+//        return "Classroom added to favorites successfully.";
+//    }
+//
+//    @DeleteMapping("/{classroomId}/favorite/{userId}")
+//    public String removeClassroomFromFavorites(@PathVariable Long classroomId, @PathVariable Long userId) {
+//        classroomService.removeClassroomFromFavorites(classroomId, userId);
+//        return "Classroom removed from favorites successfully.";
+//    }
+
+    @PostMapping("/{classroomId}/favorite")
+    public String toggleFavoriteClassroom(@PathVariable Long classroomId, HttpServletRequest request) {
+        return classroomService.toggleFavoriteClassroom(classroomId, request);
     }
 }
