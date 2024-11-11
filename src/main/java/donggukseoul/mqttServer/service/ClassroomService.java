@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -42,10 +43,36 @@ public class ClassroomService {
         return convertToDto(classroom);
     }
 
-//    public List<String> getClassroomsWithFavorites() {
-//        List<String> classroom = classroomRepository.;
-//        return classroom;
-//    }
+    public List<ClassroomDTO> getFavoriteClassrooms(HttpServletRequest request) {
+        String authorization = request.getHeader("Authorization");
+
+        // Authorization 헤더 검증
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Invalid token");
+        }
+
+        // Bearer 부분 제거 후 토큰 획득
+        String token = authorization.split(" ")[1];
+
+        // 토큰 소멸 시간 검증
+        if (jwtUtil.isExpired(token)) {
+            throw new IllegalArgumentException("Token expired");
+        }
+
+        // 토큰에서 username 획득
+        String username = jwtUtil.getUsername(token);
+
+        // 사용자 정보 조회
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        // 즐겨찾기 강의실 목록을 ClassroomDTO로 변환하여 반환
+        return user.getFavoriteClassrooms().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
 
     // ClassroomCreateDto로 ID 없이 강의실 생성
     public ClassroomDTO createClassroom(ClassroomCreateDTO classroomCreateDto) {
@@ -94,27 +121,6 @@ public class ClassroomService {
         sensorInstallationLogRepository.save(log);
     }
 
-//    @Transactional
-//    public void addClassroomToFavorites(Long classroomId, Long userId) {
-//        Classroom classroom = classroomRepository.findById(classroomId)
-//                .orElseThrow(() -> new IllegalArgumentException("Invalid classroom ID"));
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-//
-//        classroom.addFavoritedByUser(user);
-//        classroomRepository.save(classroom);
-//    }
-//
-//    @Transactional
-//    public void removeClassroomFromFavorites(Long classroomId, Long userId) {
-//        Classroom classroom = classroomRepository.findById(classroomId)
-//                .orElseThrow(() -> new IllegalArgumentException("Invalid classroom ID"));
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
-//
-//        classroom.removeFavoritedByUser(user);
-//        classroomRepository.save(classroom);
-//    }
 
     @Transactional
     public String toggleFavoriteClassroom(String building, String name, HttpServletRequest request) {

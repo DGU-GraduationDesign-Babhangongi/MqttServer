@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 @RestController
@@ -49,17 +50,6 @@ public class ClassListController {
         return ResponseEntity.noContent().build();
     }
 
-//    @PostMapping("/{classroomId}/favorite/{userId}")
-//    public String addClassroomToFavorites(@PathVariable Long classroomId, @PathVariable Long userId) {
-//        classroomService.addClassroomToFavorites(classroomId, userId);
-//        return "Classroom added to favorites successfully.";
-//    }
-//
-//    @DeleteMapping("/{classroomId}/favorite/{userId}")
-//    public String removeClassroomFromFavorites(@PathVariable Long classroomId, @PathVariable Long userId) {
-//        classroomService.removeClassroomFromFavorites(classroomId, userId);
-//        return "Classroom removed from favorites successfully.";
-//    }
 
     @PostMapping("/favorite")
     public String toggleFavoriteClassroom(
@@ -67,5 +57,11 @@ public class ClassListController {
             @RequestParam String name,
             HttpServletRequest request) {
         return classroomService.toggleFavoriteClassroom(building, name, request);
+    }
+
+    @GetMapping("/myFavorites")
+    public ResponseEntity<List<ClassroomDTO>> getFavoriteClassrooms(HttpServletRequest request) {
+        List<ClassroomDTO> favoriteClassrooms = classroomService.getFavoriteClassrooms(request);
+        return ResponseEntity.ok(favoriteClassrooms);
     }
 }
