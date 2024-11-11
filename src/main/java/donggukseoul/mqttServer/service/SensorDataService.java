@@ -149,7 +149,13 @@ public class SensorDataService {
     public Map<String, Object> getCombinedSensorData(List<SensorType> sensorTypes, String building, String name, LocalDateTime startDate, LocalDateTime endDate, SortOrder order, int page, int size) {
         Map<String, Object> response = new HashMap<>();
         List<SensorDataDTO> combinedData = new ArrayList<>();
-        Pageable pageable = PageRequest.of(page, size);
+
+        Sort.Direction sortDirection = order == SortOrder.ASC ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(sortDirection, "timestamp");
+
+        // Pageable 객체 생성 (페이징 및 정렬)
+        Pageable pageable = PageRequest.of(page, size, sort);
+//        Pageable pageable = PageRequest.of(page, size);
 
         String sensorId = classroomRepository.findSensorIdByBuildingAndName(building, name);
         if (sensorId == null) {
