@@ -61,8 +61,11 @@ public class ClassListController {
 //        return "Classroom removed from favorites successfully.";
 //    }
 
-    @PostMapping("/{classroomId}/favorite")
-    public String toggleFavoriteClassroom(@PathVariable Long classroomId, HttpServletRequest request) {
-        return classroomService.toggleFavoriteClassroom(classroomId, request);
+    @PostMapping("/favorite")
+    public String toggleFavoriteClassroom(
+            @RequestParam String building,
+            @RequestParam String name,
+            HttpServletRequest request) {
+        return classroomService.toggleFavoriteClassroom(building, name, request);
     }
 }

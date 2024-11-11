@@ -12,4 +12,6 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
     @Query("SELECT sensorId FROM Classroom WHERE building = :building AND name = :name")
     String findSensorIdByBuildingAndName(String building, String name);
 
+    Classroom findByBuildingAndName(String building, String name);
+
 }

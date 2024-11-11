@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Service
@@ -40,6 +41,11 @@ public class ClassroomService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid classroom ID"));
         return convertToDto(classroom);
     }
+
+//    public List<String> getClassroomsWithFavorites() {
+//        List<String> classroom = classroomRepository.;
+//        return classroom;
+//    }
 
     // ClassroomCreateDto로 ID 없이 강의실 생성
     public ClassroomDTO createClassroom(ClassroomCreateDTO classroomCreateDto) {
@@ -111,7 +117,7 @@ public class ClassroomService {
 //    }
 
     @Transactional
-    public String toggleFavoriteClassroom(Long classroomId, HttpServletRequest request) {
+    public String toggleFavoriteClassroom(String building, String name, HttpServletRequest request) {
         String authorization= request.getHeader("Authorization");
 
         //Authorization 헤더 검증
@@ -142,6 +148,7 @@ public class ClassroomService {
         String username = jwtUtil.getUsername(token);
 
 
+        Long classroomId = classroomRepository.findByBuildingAndName(building, name).getId();
         Long userId = userRepository.findByUsername(username).getId();
 
 
