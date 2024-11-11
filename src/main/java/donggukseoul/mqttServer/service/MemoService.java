@@ -1,8 +1,8 @@
 package donggukseoul.mqttServer.service;
 
-import donggukseoul.mqttServer.dto.ClassroomDTO;
+//import donggukseoul.mqttServer.dto.ClassroomDTO;
 import donggukseoul.mqttServer.dto.MemoDTO;
-import donggukseoul.mqttServer.dto.UserDTO;
+//import donggukseoul.mqttServer.dto.UserDTO;
 import donggukseoul.mqttServer.entity.Classroom;
 import donggukseoul.mqttServer.entity.Memo;
 import donggukseoul.mqttServer.entity.User;
@@ -11,7 +11,7 @@ import donggukseoul.mqttServer.repository.MemoRepository;
 import donggukseoul.mqttServer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
+//import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -78,28 +78,31 @@ public class MemoService {
                 .id(memo.getId())
                 .content(memo.getContent())
                 .createdAt(memo.getCreatedAt())
-                .user(convertToUserDTO(memo.getUser()))
-                .classroom(convertToClassroomDTO(memo.getClassroom()))
+                .username(memo.getUser().getUsername())
+                .nickname(memo.getUser().getNickname())
+                .building(memo.getClassroom().getBuilding())
+                .floor(memo.getClassroom().getFloor())
+                .name(memo.getClassroom().getName())
                 .build();
     }
 
-    private UserDTO convertToUserDTO(User user) {
-        return UserDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .nickname(user.getNickname())
-                .email(user.getEmail())
-                .build();
-    }
-
-    private ClassroomDTO convertToClassroomDTO(Classroom classroom) {
-        return ClassroomDTO.builder()
-                .id(classroom.getId())
-                .name(classroom.getName())
-                .floor(classroom.getFloor())
-                .building(classroom.getBuilding())
-                .sensorId(classroom.getSensorId())
-                .sensorType(classroom.getSensorType())
-                .build();
-    }
+//    private UserDTO convertToUserDTO(User user) {
+//        return UserDTO.builder()
+//                .id(user.getId())
+//                .username(user.getUsername())
+//                .nickname(user.getNickname())
+//                .email(user.getEmail())
+//                .build();
+//    }
+//
+//    private ClassroomDTO convertToClassroomDTO(Classroom classroom) {
+//        return ClassroomDTO.builder()
+//                .id(classroom.getId())
+//                .name(classroom.getName())
+//                .floor(classroom.getFloor())
+//                .building(classroom.getBuilding())
+//                .sensorId(classroom.getSensorId())
+//                .sensorType(classroom.getSensorType())
+//                .build();
+//    }
 }
