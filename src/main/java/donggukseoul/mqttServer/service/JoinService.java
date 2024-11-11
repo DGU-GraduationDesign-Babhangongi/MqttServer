@@ -50,6 +50,10 @@ public class JoinService {
     }
 
     public String getNickname(HttpServletRequest request) {
+        return getUserFromRequest(request).getNickname();
+    }
+
+    public User getUserFromRequest(HttpServletRequest request) {
         String authorization= request.getHeader("Authorization");
 
         //Authorization 헤더 검증
@@ -80,10 +84,7 @@ public class JoinService {
         String username = jwtUtil.getUsername(token);
 
 
-        String nickname = userRepository.findByUsername(username).getNickname();
-//        System.out.println("user is null");
-
-        return nickname;
+        return userRepository.findByUsername(username);
     }
 
 }

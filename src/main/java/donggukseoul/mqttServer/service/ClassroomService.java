@@ -195,7 +195,9 @@ public class ClassroomService {
         String username = jwtUtil.getUsername(token);
 
 
-        Long classroomId = classroomRepository.findByBuildingAndName(building, name).getId();
+        Long classroomId = classroomRepository.findByBuildingAndName(building, name)
+                .orElseThrow(() -> new IllegalArgumentException("Classroom not found for given building and name"))
+                .getId();
         Long userId = userRepository.findByUsername(username).getId();
 
 
