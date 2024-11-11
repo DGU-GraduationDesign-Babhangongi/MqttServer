@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
@@ -13,5 +15,8 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
     String findSensorIdByBuildingAndName(String building, String name);
 
     Classroom findByBuildingAndName(String building, String name);
+
+    List<Classroom> findByBuilding(String building);
+
 
 }

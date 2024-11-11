@@ -2,6 +2,7 @@ package donggukseoul.mqttServer.controller;
 
 import donggukseoul.mqttServer.dto.ClassroomCreateDTO;
 import donggukseoul.mqttServer.dto.ClassroomDTO;
+import donggukseoul.mqttServer.dto.FavoriteClassroomDTO;
 import donggukseoul.mqttServer.service.ClassroomService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -60,8 +61,13 @@ public class ClassListController {
     }
 
     @GetMapping("/myFavorites")
-    public ResponseEntity<List<ClassroomDTO>> getFavoriteClassrooms(HttpServletRequest request) {
-        List<ClassroomDTO> favoriteClassrooms = classroomService.getFavoriteClassrooms(request);
-        return ResponseEntity.ok(favoriteClassrooms);
+    public ResponseEntity<List<FavoriteClassroomDTO>> getClassroomsWithOptions(
+            @RequestParam(required = false) String building,
+            @RequestParam(defaultValue = "true") boolean favoriteFirst,
+            @RequestParam(defaultValue = "asc") String orderDirection,
+            HttpServletRequest request) {
+
+        List<FavoriteClassroomDTO> classrooms = classroomService.getClassroomsWithOptions(building, favoriteFirst, orderDirection, request);
+        return ResponseEntity.ok(classrooms);
     }
 }

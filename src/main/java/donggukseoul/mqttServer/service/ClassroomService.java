@@ -2,6 +2,7 @@ package donggukseoul.mqttServer.service;
 
 import donggukseoul.mqttServer.dto.ClassroomCreateDTO;
 import donggukseoul.mqttServer.dto.ClassroomDTO;
+import donggukseoul.mqttServer.dto.FavoriteClassroomDTO;
 import donggukseoul.mqttServer.entity.Classroom;
 import donggukseoul.mqttServer.entity.SensorInstallationLog;
 import donggukseoul.mqttServer.entity.User;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,11 +30,6 @@ public class ClassroomService {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
 
-
-
-    //    public Page<ClassroomDTO> getClassrooms(Pageable pageable) {
-//        return classroomRepository.findAll(pageable).map(this::convertToDto);
-//    }
     public Stream<ClassroomDTO> getClassrooms() {
         Stream<ClassroomDTO> classroom = classroomRepository.findAll().stream().map(this::convertToDto);
         return classroom;
@@ -43,7 +40,7 @@ public class ClassroomService {
         return convertToDto(classroom);
     }
 
-    public List<ClassroomDTO> getFavoriteClassrooms(HttpServletRequest request) {
+    public List<FavoriteClassroomDTO> getClassroomsWithOptions(String building, boolean favoriteFirst, String orderDirection, HttpServletRequest request) {
         String authorization = request.getHeader("Authorization");
 
         // Authorization 헤더 검증
@@ -68,11 +65,53 @@ public class ClassroomService {
             throw new IllegalArgumentException("User not found");
         }
 
-        // 즐겨찾기 강의실 목록을 ClassroomDTO로 변환하여 반환
-        return user.getFavoriteClassrooms().stream()
-                .map(this::convertToDto)
+        // building 값에 따라 전체 또는 특정 건물의 강의실 목록 조회
+        List<Classroom> classrooms = (building == null || building.isEmpty())
+                ? classroomRepository.findAll()
+                : classroomRepository.findByBuilding(building);
+
+        // 즐겨찾기한 강의실 목록과 즐겨찾기하지 않은 강의실 목록으로 분리
+        List<FavoriteClassroomDTO> favoritedList = classrooms.stream()
+                .filter(classroom -> user.getFavoriteClassrooms().contains(classroom))
+                .map(classroom -> convertToFavoriteClassroomDto(classroom, true))
+                .sorted(getNameComparator(orderDirection))
                 .collect(Collectors.toList());
+
+        List<FavoriteClassroomDTO> nonFavoritedList = classrooms.stream()
+                .filter(classroom -> !user.getFavoriteClassrooms().contains(classroom))
+                .map(classroom -> convertToFavoriteClassroomDto(classroom, false))
+                .sorted(getNameComparator(orderDirection))
+                .collect(Collectors.toList());
+
+        // favoriteFirst에 따라 리스트 합치기
+        if (favoriteFirst) {
+            favoritedList.addAll(nonFavoritedList);
+            return favoritedList;
+        } else {
+            nonFavoritedList.addAll(favoritedList);
+            return nonFavoritedList;
+        }
     }
+
+    private Comparator<FavoriteClassroomDTO> getNameComparator(String orderDirection) {
+        Comparator<FavoriteClassroomDTO> nameComparator = Comparator.comparing(FavoriteClassroomDTO::getName);
+        if ("desc".equalsIgnoreCase(orderDirection)) {
+            return nameComparator.reversed();
+        }
+        return nameComparator;
+    }
+
+    private FavoriteClassroomDTO convertToFavoriteClassroomDto(Classroom classroom, boolean isFavorited) {
+        return FavoriteClassroomDTO.builder()
+                .id(classroom.getId())
+                .name(classroom.getName())
+                .floor(classroom.getFloor())
+                .building(classroom.getBuilding())
+                .sensorId(classroom.getSensorId())
+                .isFavorited(isFavorited) // 즐겨찾기 여부 설정
+                .build();
+    }
+
 
     // ClassroomCreateDto로 ID 없이 강의실 생성
     public ClassroomDTO createClassroom(ClassroomCreateDTO classroomCreateDto) {
