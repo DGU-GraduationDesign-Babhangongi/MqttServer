@@ -1,6 +1,6 @@
 package donggukseoul.mqttServer.controller;
 
-import donggukseoul.mqttServer.dto.ClassroomFanStatusDTO;
+import donggukseoul.mqttServer.dto.ClassroomStatusDTO;
 import donggukseoul.mqttServer.service.ControlService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +17,9 @@ public class ControlController {
 
     private final ControlService controlService;
 
-    @GetMapping("/classroom-fan-status")
-    public ResponseEntity<List<ClassroomFanStatusDTO>> getClassroomFanStatus() {
-        List<ClassroomFanStatusDTO> fanStatuses = controlService.getClassroomFanStatuses();
-        return ResponseEntity.ok(fanStatuses);
+    @GetMapping("/classroom-status")
+    public ResponseEntity<List<ClassroomStatusDTO>> getClassroomStatus() {
+        List<ClassroomStatusDTO> classroomStatuses = controlService.getClassroomStatuses();
+        return ResponseEntity.ok(classroomStatuses);
     }
 }

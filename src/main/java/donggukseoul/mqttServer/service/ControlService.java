@@ -2,7 +2,7 @@ package donggukseoul.mqttServer.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import donggukseoul.mqttServer.dto.ClassroomFanStatusDTO;
+import donggukseoul.mqttServer.dto.ClassroomStatusDTO;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -19,7 +19,7 @@ import java.util.List;
 public class ControlService {
 
     private final ObjectMapper objectMapper;
-    private List<ClassroomFanStatusDTO> classroomFanStatuses = new ArrayList<>();
+    private List<ClassroomStatusDTO> classroomStatuses = new ArrayList<>();
 
     @PostConstruct
     public void initializeMqttClient() {
@@ -55,22 +55,32 @@ public class ControlService {
             JsonNode rootNode = objectMapper.readTree(payload);
             JsonNode dataArray = rootNode.path("data");
 
-            List<ClassroomFanStatusDTO> newStatuses = new ArrayList<>();
+            List<ClassroomStatusDTO> newStatuses = new ArrayList<>();
             for (JsonNode dataNode : dataArray) {
                 int classroom = dataNode.path("강의실").asInt();
+                String time = dataNode.path("시간").asText();
                 String fanStatus = dataNode.path("fan").asText();
-                newStatuses.add(new ClassroomFanStatusDTO(classroom, fanStatus));
+
+                // 이상 수치가 있는 경우 해당 항목들의 이름을 리스트로 저장
+                List<String> abnormalValues = new ArrayList<>();
+                JsonNode abnormalNode = dataNode.path("이상 수치");
+                if (abnormalNode.isObject()) {
+                    abnormalNode.fieldNames().forEachRemaining(abnormalValues::add);
+                }
+
+                ClassroomStatusDTO statusDTO = new ClassroomStatusDTO(classroom, time, fanStatus, abnormalValues);
+                newStatuses.add(statusDTO);
             }
 
-            // Update the list of classroom statuses
-            classroomFanStatuses = newStatuses;
+            // 업데이트된 상태 리스트로 교체
+            classroomStatuses = newStatuses;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public List<ClassroomFanStatusDTO> getClassroomFanStatuses() {
-        return classroomFanStatuses;
+    public List<ClassroomStatusDTO> getClassroomStatuses() {
+        return classroomStatuses;
     }
 }
