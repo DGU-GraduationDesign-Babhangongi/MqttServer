@@ -38,8 +38,8 @@ public class Classroom {
     @Builder.Default
     private Set<User> favoritedByUsers = new HashSet<>();
 
-    @OneToMany
-    private List<SensorInstallationLog> sensorInstallationLogs;
+//    @OneToMany
+//    private List<SensorInstallationLog> sensorInstallationLogs;
 
     // 추가 메서드
     public void addFavoritedByUser(User user) {
