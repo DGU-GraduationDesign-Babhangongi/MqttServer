@@ -20,9 +20,7 @@ public class SensorInstallationLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "classroom_id")
-    private Classroom classroom;  // 센서가 설치된 강의실
+    private Long classroomId;  // 센서가 설치된 강의실 ID
 
     private String sensorId;  // 설치된 센서 ID
     private LocalDateTime timestamp;  // 센서 설치/변경 시간

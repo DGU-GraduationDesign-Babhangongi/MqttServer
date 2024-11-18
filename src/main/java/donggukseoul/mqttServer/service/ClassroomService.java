@@ -4,9 +4,11 @@ import donggukseoul.mqttServer.dto.ClassroomCreateDTO;
 import donggukseoul.mqttServer.dto.ClassroomDTO;
 import donggukseoul.mqttServer.dto.FavoriteClassroomDTO;
 import donggukseoul.mqttServer.entity.Classroom;
+import donggukseoul.mqttServer.entity.ClassroomDeletionLog;
 import donggukseoul.mqttServer.entity.SensorInstallationLog;
 import donggukseoul.mqttServer.entity.User;
 import donggukseoul.mqttServer.jwt.JWTUtil;
+import donggukseoul.mqttServer.repository.ClassroomDeletionLogRepository;
 import donggukseoul.mqttServer.repository.ClassroomRepository;
 import donggukseoul.mqttServer.repository.SensorInstallationLogRepository;
 import donggukseoul.mqttServer.repository.UserRepository;
@@ -29,6 +31,7 @@ public class ClassroomService {
     private final SensorInstallationLogRepository sensorInstallationLogRepository;
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
+    private final ClassroomDeletionLogRepository classroomDeletionLogRepository;
 
     public Stream<ClassroomDTO> getClassrooms() {
         Stream<ClassroomDTO> classroom = classroomRepository.findAll().stream().map(this::convertToDto);
@@ -187,15 +190,24 @@ public class ClassroomService {
         classroomRepository.deleteById(id);
     }
 
-    public void deleteClassroomByName(String building, String name) {
+    public void deleteClassroomByName(String building, String name, String reason) {
         Classroom classroom = classroomRepository.findByBuildingAndName(building, name)
                 .orElseThrow(() -> new IllegalArgumentException("Classroom not found for given building and name"));
+
+        // 삭제 로그 저장
+        ClassroomDeletionLog deletionLog = ClassroomDeletionLog.builder()
+                .classroomId(classroom.getId())
+                .reason(reason)
+                .timestamp(LocalDateTime.now())
+                .build();
+        classroomDeletionLogRepository.save(deletionLog);
+
         classroomRepository.delete(classroom);
     }
 
     private void logSensorInstallation(Classroom classroom, String sensorId) {
         SensorInstallationLog log = SensorInstallationLog.builder()
-                .classroom(classroom)
+                .classroomId(classroom.getId())
                 .sensorId(sensorId)
                 .timestamp(LocalDateTime.now())
                 .build();

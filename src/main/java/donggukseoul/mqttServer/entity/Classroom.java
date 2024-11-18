@@ -1,3 +1,4 @@
+// Classroom.java
 package donggukseoul.mqttServer.entity;
 
 import lombok.AllArgsConstructor;
@@ -34,9 +35,10 @@ public class Classroom {
             joinColumns = @JoinColumn(name = "classroom_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @Builder.Default
     private Set<User> favoritedByUsers = new HashSet<>();
 
-    @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany
     private List<SensorInstallationLog> sensorInstallationLogs;
 
     // 추가 메서드

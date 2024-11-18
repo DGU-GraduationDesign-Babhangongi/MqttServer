@@ -52,9 +52,9 @@ public class ClassListController {
     }
 
     @DeleteMapping("/name")
-    public ResponseEntity<Void> deleteClassroom(@RequestParam String building,
-                                                @RequestParam String name) {
-        classroomService.deleteClassroomByName(building, name);
+    public ResponseEntity<Void> deleteClassroomByName(@RequestParam String building, @RequestParam String name, @RequestParam String reason) {
+        classroomService.deleteClassroomByName(building, name, reason);
+
         return ResponseEntity.noContent().build();
     }
 
