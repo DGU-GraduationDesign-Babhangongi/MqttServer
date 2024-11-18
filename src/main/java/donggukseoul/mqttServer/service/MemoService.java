@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 //import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,7 +37,7 @@ public class MemoService {
                 .user(user)
                 .classroom(classroom)
                 .content(content)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
                 .build();
 
         Memo savedMemo = memoRepository.save(memo);
