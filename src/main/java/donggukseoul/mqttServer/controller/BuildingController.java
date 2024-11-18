@@ -19,6 +19,12 @@ public class BuildingController {
 
     private final BuildingService buildingService;
 
+    @GetMapping()
+    public ResponseEntity<List<String>> getAllBuildingNames() {
+        List<String> buildingNames = buildingService.getAllBuildingNames();
+        return ResponseEntity.ok(buildingNames);
+    }
+
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<BuildingDTO> createBuilding(
             @RequestParam("name") String name,

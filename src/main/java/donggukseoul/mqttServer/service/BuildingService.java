@@ -64,6 +64,12 @@ public class BuildingService {
         return convertToDTO(building);
     }
 
+    public List<String> getAllBuildingNames() {
+        return buildingRepository.findAll().stream()
+                .map(Building::getName)
+                .collect(Collectors.toList());
+    }
+
     private String uploadFileToGCS(MultipartFile multipartFile, String fileName) throws IOException {
         InputStream keyFile = ResourceUtils.getURL(keyFileName).openStream();
 
