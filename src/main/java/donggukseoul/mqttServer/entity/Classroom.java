@@ -38,8 +38,18 @@ public class Classroom {
     @Builder.Default
     private Set<User> favoritedByUsers = new HashSet<>();
 
-//    @OneToMany
-//    private List<SensorInstallationLog> sensorInstallationLogs;
+    @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Device> devices = new HashSet<>();
+
+    public void addDevice(Device device) {
+        devices.add(device);
+        device.setClassroom(this);
+    }
+
+    public void removeDevice(Device device) {
+        devices.remove(device);
+        device.setClassroom(null);
+    }
 
     // 추가 메서드
     public void addFavoritedByUser(User user) {
