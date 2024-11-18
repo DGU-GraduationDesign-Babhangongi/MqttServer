@@ -70,4 +70,13 @@ public class ClassListController {
         List<FavoriteClassroomDTO> classrooms = classroomService.getClassroomsWithOptions(building, favoriteFirst, orderDirection, request);
         return ResponseEntity.ok(classrooms);
     }
+
+    @GetMapping("/favorite/status")
+    public ResponseEntity<Boolean> isFavoriteClassroom(
+            @RequestParam String building,
+            @RequestParam String name,
+            HttpServletRequest request) {
+        boolean isFavorite = classroomService.isFavoriteClassroom(building, name, request);
+        return ResponseEntity.ok(isFavorite);
+    }
 }
