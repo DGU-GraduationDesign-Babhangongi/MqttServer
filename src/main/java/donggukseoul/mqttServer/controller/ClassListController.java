@@ -51,6 +51,13 @@ public class ClassListController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/name")
+    public ResponseEntity<Void> deleteClassroom(@RequestParam String building,
+                                                @RequestParam String name) {
+        classroomService.deleteClassroomByName(building, name);
+        return ResponseEntity.noContent().build();
+    }
+
 
     @PostMapping("/favorite")
     public String toggleFavoriteClassroom(

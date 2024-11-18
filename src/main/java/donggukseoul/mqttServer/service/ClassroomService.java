@@ -187,6 +187,12 @@ public class ClassroomService {
         classroomRepository.deleteById(id);
     }
 
+    public void deleteClassroomByName(String building, String name) {
+        Classroom classroom = classroomRepository.findByBuildingAndName(building, name)
+                .orElseThrow(() -> new IllegalArgumentException("Classroom not found for given building and name"));
+        classroomRepository.delete(classroom);
+    }
+
     private void logSensorInstallation(Classroom classroom, String sensorId) {
         SensorInstallationLog log = SensorInstallationLog.builder()
                 .classroom(classroom)

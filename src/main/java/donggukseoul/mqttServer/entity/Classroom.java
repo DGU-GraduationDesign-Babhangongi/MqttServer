@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -34,6 +35,9 @@ public class Classroom {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> favoritedByUsers = new HashSet<>();
+
+    @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SensorInstallationLog> sensorInstallationLogs;
 
     // 추가 메서드
     public void addFavoritedByUser(User user) {
