@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -491,7 +492,7 @@ public class SensorDataService {
     }
 
     public List<SensorDataDTO> getAbnormalValuesOverTheLastHour() {
-        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        LocalDateTime oneHourAgo = LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusHours(1);
 
         List<SensorDataDTO> temperatureAnomalies = sensorDataTemperatureRepository.findAllByTimestampAfter(oneHourAgo).stream()
                 .map(data -> {
