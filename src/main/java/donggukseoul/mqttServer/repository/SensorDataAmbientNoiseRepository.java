@@ -39,15 +39,14 @@ public interface SensorDataAmbientNoiseRepository extends JpaRepository<SensorDa
 
 
 
-    @Query("SELECT new donggukseoul.mqttServer.dto.SensorDataDTO(sd.sensorId, c.building, c.name, sd.timestamp, sd.value, 'PM2_5MassConcentration') " +
-            "FROM SensorDataPm2_5MassConcentration sd JOIN Classroom c ON sd.sensorId = c.sensorId WHERE sd.sensorId = :sensorId AND sd.timestamp BETWEEN :startDate AND :endDate")
+    @Query("SELECT new donggukseoul.mqttServer.dto.SensorDataDTO(sd.sensorId, c.building, c.name, sd.timestamp, sd.value, 'AmbientNoise') " +
+            "FROM SensorDataAmbientNoise sd JOIN Classroom c ON sd.sensorId = c.sensorId WHERE sd.sensorId = :sensorId AND sd.timestamp BETWEEN :startDate AND :endDate")
     List<SensorDataDTO> findAllBySensorIdAndTimestampBetween(
             @Param("sensorId") String sensorId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT new donggukseoul.mqttServer.dto.SensorDataDTO(sd.sensorId, c.building, c.name, sd.timestamp, sd.value, 'PM2_5MassConcentration') " +
-            "FROM SensorDataPm2_5MassConcentration sd JOIN Classroom c ON sd.sensorId = c.sensorId WHERE sd.timestamp > :timestamp")
+    @Query("SELECT new donggukseoul.mqttServer.dto.SensorDataDTO(sd.sensorId, c.building, c.name, sd.timestamp, sd.value, 'AmbientNoise') " +
+            "FROM SensorDataAmbientNoise sd JOIN Classroom c ON sd.sensorId = c.sensorId WHERE sd.timestamp > :timestamp")
     List<SensorDataDTO> findAllByTimestampAfter(@Param("timestamp") LocalDateTime timestamp);
-
 }
