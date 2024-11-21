@@ -3,8 +3,11 @@ package donggukseoul.mqttServer.service;
 import donggukseoul.mqttServer.dto.DeviceDTO;
 import donggukseoul.mqttServer.entity.Classroom;
 import donggukseoul.mqttServer.entity.Device;
+import donggukseoul.mqttServer.entity.User;
 import donggukseoul.mqttServer.repository.ClassroomRepository;
 import donggukseoul.mqttServer.repository.DeviceRepository;
+import donggukseoul.mqttServer.repository.UserRepository;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +21,10 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
     private final ClassroomRepository classroomRepository;
 
+    private final UserRepository userRepository;
+
+    private final EmailService emailService;
+
     public List<DeviceDTO> getDevicesByClassroom(String building, String name) {
         Classroom classroom = classroomRepository.findByBuildingAndName(building, name)
                 .orElseThrow(() -> new IllegalArgumentException("Classroom not found for given building and name"));
@@ -26,11 +33,17 @@ public class DeviceService {
                 .collect(Collectors.toList());
     }
 
-    public DeviceDTO toggleDeviceStatus(Long deviceId) {
+    public DeviceDTO toggleDeviceStatus(Long deviceId) throws MessagingException {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid device ID"));
         device.setStatus(!device.isStatus());
-        return convertToDTO(deviceRepository.save(device));
+        DeviceDTO deviceDTO = convertToDTO(deviceRepository.save(device));
+
+        if (device.isStatus()) {
+            notifyUsers(device.getClassroom());
+        }
+
+        return deviceDTO;
     }
 
     public DeviceDTO addDeviceToClassroom(String building, String name, String type) {
@@ -53,5 +66,14 @@ public class DeviceService {
 
     private DeviceDTO convertToDTO(Device device) {
         return new DeviceDTO(device.getId(), device.getType(), device.isStatus());
+    }
+
+    private void notifyUsers(Classroom classroom) throws MessagingException {
+        List<User> users = userRepository.findByAreaOfResponsibility(classroom.getBuilding());
+        for (User user : users) {
+            if (user.isAlarmStatus()) {
+                emailService.sendNotificationEmail(user.getEmail(), classroom.getName());
+            }
+        }
     }
 }

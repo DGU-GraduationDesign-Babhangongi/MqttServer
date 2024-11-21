@@ -3,6 +3,8 @@ package donggukseoul.mqttServer.controller;
 import donggukseoul.mqttServer.dto.DeviceDTO;
 import donggukseoul.mqttServer.entity.Device;
 import donggukseoul.mqttServer.service.DeviceService;
+import donggukseoul.mqttServer.service.EmailService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ public class DeviceController {
 
     private final DeviceService deviceService;
 
+
     @GetMapping("/classroom")
     public ResponseEntity<List<DeviceDTO>> getDevicesByClassroom(@RequestParam String building, @RequestParam String name) {
         List<DeviceDTO> devices = deviceService.getDevicesByClassroom(building, name);
@@ -23,7 +26,7 @@ public class DeviceController {
     }
 
     @PostMapping("/toggle/deviceId")
-    public ResponseEntity<DeviceDTO> toggleDeviceStatus(@RequestParam Long deviceId) {
+    public ResponseEntity<DeviceDTO> toggleDeviceStatus(@RequestParam Long deviceId) throws MessagingException {
         DeviceDTO device = deviceService.toggleDeviceStatus(deviceId);
         return ResponseEntity.ok(device);
     }
