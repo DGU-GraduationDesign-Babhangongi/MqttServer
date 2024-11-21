@@ -3,7 +3,10 @@ package donggukseoul.mqttServer.service;
 import donggukseoul.mqttServer.dto.JoinDTO;
 import donggukseoul.mqttServer.entity.User;
 import donggukseoul.mqttServer.jwt.JWTUtil;
+import donggukseoul.mqttServer.repository.AllowedEmailRepository;
 import donggukseoul.mqttServer.repository.UserRepository;
+import donggukseoul.mqttServer.util.VerificationUtil;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +23,22 @@ public class JoinService {
 
     private final JWTUtil jwtUtil;
 
+    private final VerificationService verificationService;
 
-    public void joinProcess(JoinDTO joinDTO) {
+    private final EmailService emailService;
 
-//        String username = joinDTO.getUsername();
-//        String password = joinDTO.getPassword();
+    private final AllowedEmailService allowedEmailService;
+
+
+    public void joinProcess(JoinDTO joinDTO) throws MessagingException {
+
+        if (!verificationService.verifyCode(joinDTO.getEmail(), joinDTO.getSecurityCode())) {
+            throw new IllegalArgumentException("인증 코드가 유효하지 않습니다.");
+        }
+
+        if (!allowedEmailService.isAllowedEmail(joinDTO.getEmail())) {
+            throw new IllegalArgumentException("허용되지 않은 이메일입니다.");
+        }
 
         Boolean isExist = userRepository.existsByUsername(joinDTO.getUsername());
 
@@ -39,14 +53,20 @@ public class JoinService {
         data.setPassword(bCryptPasswordEncoder.encode(joinDTO.getPassword()));
         data.setNickname(joinDTO.getNickname());
         data.setEmail(joinDTO.getEmail());
-//        data.setPhoneNumber(joinDTO.getPhoneNumber());
         data.setAreaOfResponsibility(joinDTO.getAreaOfResponsibility());
-//        data.setSecurityCode(joinDTO.getSecurityCode());
         data.setAlarmStatus(joinDTO.isAlarmStatus());
         data.setRole("ROLE_ADMIN");
 
         userRepository.save(data);
 
+        verificationService.invalidateCode(joinDTO.getEmail());
+
+    }
+
+    public void sendVerificationCode(String email) throws MessagingException {
+        String code = VerificationUtil.generateVerificationCode();
+        verificationService.saveVerificationCode(email, code);
+        emailService.sendVerificationEmail(email, code);
     }
 
     public String getNickname(HttpServletRequest request) {
