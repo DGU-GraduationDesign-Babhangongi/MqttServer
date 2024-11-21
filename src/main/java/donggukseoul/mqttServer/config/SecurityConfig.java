@@ -3,6 +3,7 @@ package donggukseoul.mqttServer.config;
 import donggukseoul.mqttServer.jwt.JWTFilter;
 import donggukseoul.mqttServer.jwt.JWTUtil;
 import donggukseoul.mqttServer.jwt.LoginFilter;
+import donggukseoul.mqttServer.service.TokenBlacklistService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +28,7 @@ import java.util.Collections;
 public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final TokenBlacklistService tokenBlacklistService;
     private final JWTUtil jwtUtil;
 
     //AuthenticationManager Bean 등록
@@ -85,7 +87,7 @@ public class SecurityConfig {
 
 
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+                .addFilterBefore(new JWTFilter(jwtUtil, tokenBlacklistService), LoginFilter.class);
 
         LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil);
         loginFilter.setFilterProcessesUrl("/api/login");

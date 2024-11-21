@@ -2,6 +2,7 @@ package donggukseoul.mqttServer.jwt;
 
 import donggukseoul.mqttServer.dto.CustomUserDetails;
 import donggukseoul.mqttServer.entity.User;
+import donggukseoul.mqttServer.service.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +19,7 @@ import java.io.IOException;
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -45,6 +47,11 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
             //조건이 해당되면 메소드 종료 (필수)
+            return;
+        }
+
+        if (tokenBlacklistService.isTokenBlacklisted(token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
