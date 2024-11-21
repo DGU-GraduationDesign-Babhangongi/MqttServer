@@ -13,15 +13,23 @@ public class SensorDataDTO {
 
     private String sensorId;
 
+    private String building;
+
+    private String name;
+
     private LocalDateTime timestamp;
 
     private Double value;
 
     private String sensorType;
-//    public SensorDataDTO(String sensorId, LocalDateTime timestamp, double value, String sensorType) {
-//        this.sensorId = sensorId;
-//        this.timestamp = timestamp;
-//        this.value = value;
-//        this.sensorType = sensorType;
-//    }
+
+    private String level;
+    public SensorDataDTO(String sensorId, String building, String name, LocalDateTime timestamp, double value, String sensorType) {
+        this.sensorId = sensorId;
+        this.building = building;
+        this.name = name;
+        this.timestamp = timestamp;
+        this.value = value;
+        this.sensorType = sensorType;
+    }
 }

@@ -1,14 +1,15 @@
 package donggukseoul.mqttServer.controller;
 
+import donggukseoul.mqttServer.dto.SensorDataDTO;
 import donggukseoul.mqttServer.enums.SensorType;
 import donggukseoul.mqttServer.enums.SortBy;
 import donggukseoul.mqttServer.enums.SortOrder;
 import donggukseoul.mqttServer.service.SensorDataService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -101,6 +102,12 @@ public class SensorDataController {
         Map<String, Object> response = sensorDataService.getRecentSensorDataByBuildingAndName(building, name);
 
         return response;
+    }
+
+    @GetMapping("/abnormalValues")
+    public ResponseEntity<List<SensorDataDTO>> getAbnormalValuesOverTheLastHour() {
+        List<SensorDataDTO> anomalies = sensorDataService.getAbnormalValuesOverTheLastHour();
+        return ResponseEntity.ok(anomalies);
     }
 
 }

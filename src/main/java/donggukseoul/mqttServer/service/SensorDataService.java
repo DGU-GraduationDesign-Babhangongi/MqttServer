@@ -10,8 +10,8 @@ import donggukseoul.mqttServer.enums.SensorType;
 import donggukseoul.mqttServer.enums.SortBy;
 import donggukseoul.mqttServer.enums.SortOrder;
 import donggukseoul.mqttServer.repository.*;
+import donggukseoul.mqttServer.util.SensorDataChecker;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-
 public class SensorDataService {
     private final ClassroomRepository classroomRepository;
 
@@ -40,7 +39,7 @@ public class SensorDataService {
     private final SensorDataButtonPressedRepository sensorDataButtonPressedRepository;
     private final SensorDataWaterDetectionRepository sensorDataWaterDetectionRepository;
     private final SensorDataPm2_5MassConcentrationRepository sensorDataPm2_5MassConcentrationRepository;
-
+    private final SensorDataChecker sensorDataChecker;
 
     public Map<String, Object> getSensorData(
             SensorType sensorType,
@@ -489,6 +488,66 @@ public class SensorDataService {
         }
 
         return response;
+    }
+
+    public List<SensorDataDTO> getAbnormalValuesOverTheLastHour() {
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+
+        List<SensorDataDTO> temperatureAnomalies = sensorDataTemperatureRepository.findAllByTimestampAfter(oneHourAgo).stream()
+                .map(data -> {
+                    String level = sensorDataChecker.checkTemperature(data.getValue());
+                    data.setLevel(level); // level 값 설정
+                    return data;
+                })
+                .filter(data -> "RED".equals(data.getLevel()) || "ORANGE".equals(data.getLevel()) || "YELLOW".equals(data.getLevel()))
+                .collect(Collectors.toList());
+
+        List<SensorDataDTO> humidityAnomalies = sensorDataHumidityRepository.findAllByTimestampAfter(oneHourAgo).stream()
+                .map(data -> {
+                    String level = sensorDataChecker.checkHumidity(data.getValue());
+                    data.setLevel(level); // level 값 설정
+                    return data;
+                })
+                .filter(data -> "RED".equals(data.getLevel()) || "ORANGE".equals(data.getLevel()) || "YELLOW".equals(data.getLevel()))
+                .collect(Collectors.toList());
+
+        List<SensorDataDTO> tvocAnomalies = sensorDataTvocRepository.findAllByTimestampAfter(oneHourAgo).stream()
+                .map(data -> {
+                    String level = sensorDataChecker.checkTvoc(data.getValue());
+                    data.setLevel(level); // level 값 설정
+                    return data;
+                })
+                .filter(data -> "RED".equals(data.getLevel()) || "ORANGE".equals(data.getLevel()) || "YELLOW".equals(data.getLevel()))
+                .collect(Collectors.toList());
+
+        List<SensorDataDTO> pm25Anomalies = sensorDataPm2_5MassConcentrationRepository.findAllByTimestampAfter(oneHourAgo).stream()
+                .map(data -> {
+                    String level = sensorDataChecker.checkPm25(data.getValue());
+                    data.setLevel(level); // level 값 설정
+                    return data;
+                })
+                .filter(data -> "RED".equals(data.getLevel()) || "ORANGE".equals(data.getLevel()) || "YELLOW".equals(data.getLevel()))
+                .collect(Collectors.toList());
+
+        List<SensorDataDTO> noiseAnomalies = sensorDataAmbientNoiseRepository.findAllByTimestampAfter(oneHourAgo).stream()
+                .map(data -> {
+                    String level = sensorDataChecker.checkNoise(data.getValue());
+                    data.setLevel(level); // level 값 설정
+                    return data;
+                })
+                .filter(data -> "RED".equals(data.getLevel()) || "ORANGE".equals(data.getLevel()) || "YELLOW".equals(data.getLevel()))
+                .collect(Collectors.toList());
+
+        List<SensorDataDTO> anomalies = new ArrayList<>();
+        anomalies.addAll(temperatureAnomalies);
+        anomalies.addAll(humidityAnomalies);
+        anomalies.addAll(tvocAnomalies);
+        anomalies.addAll(pm25Anomalies);
+        anomalies.addAll(noiseAnomalies);
+
+        anomalies.sort(Comparator.comparing(SensorDataDTO::getTimestamp).reversed());
+
+        return anomalies;
     }
 
     public Map<String, Object> getRecentSensorDataByBuildingAndName(String building, String name) {
