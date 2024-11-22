@@ -2,21 +2,21 @@ package donggukseoul.mqttServer.service;
 
 import donggukseoul.mqttServer.dto.JoinDTO;
 import donggukseoul.mqttServer.entity.User;
-//import donggukseoul.mqttServer.exception.CustomExceptions.*;
 
 
 import donggukseoul.mqttServer.exception.CustomException;
 import donggukseoul.mqttServer.exception.ErrorCode;
 import donggukseoul.mqttServer.jwt.JWTUtil;
-import donggukseoul.mqttServer.repository.AllowedEmailRepository;
 import donggukseoul.mqttServer.repository.UserRepository;
 import donggukseoul.mqttServer.util.VerificationUtil;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +33,8 @@ public class JoinService {
     private final EmailService emailService;
 
     private final AllowedEmailService allowedEmailService;
+
+    private final TokenBlacklistService tokenBlacklistService;
 
 
     public void joinProcess(JoinDTO joinDTO) {
@@ -86,35 +88,14 @@ public class JoinService {
         emailService.sendVerificationEmail(email, code);
     }
 
-    public String getNickname(HttpServletRequest request) {
+    public String getNickname(HttpServletRequest request) throws ServletException, IOException {
         return getUserFromRequest(request).getNickname();
     }
 
-    public User getUserFromRequest(HttpServletRequest request) {
-        String authorization= request.getHeader("Authorization");
-
-        //Authorization 헤더 검증
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-
-            System.out.println("token null");
-//            filterChain.doFilter(request, response);
-
-            //조건이 해당되면 메소드 종료 (필수)
-            return null;
-        }
-
-        System.out.println("authorization now");
-        //Bearer 부분 제거 후 순수 토큰만 획득
-        String token = authorization.split(" ")[1];
-
-        //토큰 소멸 시간 검증
-        if (jwtUtil.isExpired(token)) {
-
-            System.out.println("token expired");
-//            filterChain.doFilter(request, response);
-
-            //조건이 해당되면 메소드 종료 (필수)
-            return null;
+    public User getUserFromRequest(HttpServletRequest request) throws ServletException, IOException {
+        String token = jwtUtil.validateToken(request,null,null, tokenBlacklistService);
+        if (token == null) {
+            throw new IllegalArgumentException("Invalid token");
         }
 
         //토큰에서 username과 role 획득

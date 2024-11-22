@@ -19,5 +19,4 @@ public class SensorDataHumidity {
     private LocalDateTime timestamp;
     private Double value;
 
-    // Getters and setters
 }

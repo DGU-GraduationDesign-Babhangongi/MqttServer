@@ -19,6 +19,4 @@ public class MemoDTO {
     private Integer floor;
     private String name;
 
-//    private UserDTO user;       // 작성자 정보 DTO
-//    private ClassroomDTO classroom;  // 강의실 정보 DTO
 }

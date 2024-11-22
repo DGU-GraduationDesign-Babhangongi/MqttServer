@@ -17,26 +17,6 @@ public interface SensorDataHumidityRepository extends JpaRepository<SensorDataHu
     Page<SensorDataHumidity> findBySensorId(String sensorId, Pageable pageable);
     SensorDataHumidity findFirstBySensorIdOrderByTimestampDesc(String sensorId);
 
-//    @Query("SELECT new donggukseoul.mqttServer.dto.SensorDataDTO(sd.sensorId, sd.timestamp, sd.value, 'Humidity') " +
-//            "FROM SensorDataHumidity sd WHERE sd.sensorId = :sensorId AND sd.timestamp BETWEEN :startDate AND :endDate")
-//    List<SensorDataDTO> findAllBySensorIdAndTimestampBetween(
-//            @Param("sensorId") String sensorId,
-//            @Param("startDate") LocalDateTime startDate,
-//            @Param("endDate") LocalDateTime endDate);
-//    @Query("SELECT new donggukseoul.mqttServer.dto.SensorDataDTO(sd.sensorId, sd.timestamp, sd.value, 'Humidity') " +
-//            "FROM SensorDataHumidity sd WHERE sd.sensorId = :sensorId AND sd.timestamp BETWEEN :startDate AND :endDate")
-//    List<SensorDataDTO> findAllBySensorIdAndTimestampBetween(
-//            @Param("sensorId") String sensorId,
-//            @Param("startDate") LocalDateTime startDate,
-//            @Param("endDate") LocalDateTime endDate);
-
-    Page<?> findBySensorIdAndTimestampBetween(String sensorId, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
-
-//    @Query("SELECT new donggukseoul.mqttServer.dto.SensorDataDTO(sd.sensorId, sd.timestamp, sd.value, 'Humidity') " +
-//            "FROM SensorDataHumidity sd WHERE sd.timestamp > :timestamp")
-//    List<SensorDataDTO> findAllByTimestampAfter(@Param("timestamp") LocalDateTime timestamp);
-
-
     @Query("SELECT new donggukseoul.mqttServer.dto.SensorDataDTO(sd.sensorId, c.building, c.name, sd.timestamp, sd.value, 'Humidity') " +
             "FROM SensorDataHumidity sd JOIN Classroom c ON sd.sensorId = c.sensorId WHERE sd.sensorId = :sensorId AND sd.timestamp BETWEEN :startDate AND :endDate")
     List<SensorDataDTO> findAllBySensorIdAndTimestampBetween(

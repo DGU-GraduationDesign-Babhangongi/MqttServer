@@ -1,15 +1,12 @@
 package donggukseoul.mqttServer.controller;
 
-
-import donggukseoul.mqttServer.enums.SensorType;
-import donggukseoul.mqttServer.enums.SortBy;
-import donggukseoul.mqttServer.enums.SortOrder;
 import donggukseoul.mqttServer.service.JoinService;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/user")
@@ -18,7 +15,7 @@ public class UserController {
 
     private final JoinService joinService;
     @GetMapping("nickname")
-    public String getNickname(HttpServletRequest request) {
+    public String getNickname(HttpServletRequest request) throws ServletException, IOException {
         return joinService.getNickname(request);
     }
 }

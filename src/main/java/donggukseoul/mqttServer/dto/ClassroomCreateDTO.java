@@ -9,11 +9,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClassroomCreateDTO {  // ID 없이 생성할 DTO
+public class ClassroomCreateDTO {
 
     private String name;
     private Integer floor;
     private String building;
-    private String sensorId;  // Sensor ID는 nullable
+    private String sensorId;
     private String sensorType;
 }

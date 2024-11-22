@@ -1,6 +1,8 @@
 package donggukseoul.mqttServer.service;
 
 import donggukseoul.mqttServer.entity.AllowedEmail;
+import donggukseoul.mqttServer.exception.CustomException;
+import donggukseoul.mqttServer.exception.ErrorCode;
 import donggukseoul.mqttServer.repository.AllowedEmailRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,11 +20,16 @@ public class AllowedEmailService {
             AllowedEmail allowedEmail = new AllowedEmail();
             allowedEmail.setEmail(email);
             allowedEmailRepository.save(allowedEmail);
+        } else {
+            throw new CustomException(ErrorCode.ALLOWED_EMAIL_ALREADY_EXISTS);
         }
     }
 
     @Transactional
     public void removeAllowedEmail(String email) {
+        if (!allowedEmailRepository.existsByEmail(email)) {
+            throw new CustomException(ErrorCode.EMAIL_NOT_FOUND);
+        }
         allowedEmailRepository.deleteByEmail(email);
     }
 

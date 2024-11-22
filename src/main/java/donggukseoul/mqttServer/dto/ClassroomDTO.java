@@ -15,7 +15,7 @@ public class ClassroomDTO {
     private String name;
     private Integer floor;
     private String building;
-    private String sensorId;  // 센서 ID 추가
+    private String sensorId;
     private String sensorType;
 
 }

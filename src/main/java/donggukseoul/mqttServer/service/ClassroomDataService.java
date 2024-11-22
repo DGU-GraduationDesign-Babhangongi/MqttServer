@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 public class ClassroomDataService {
 
     private final ObjectMapper objectMapper;
-//    private final ClassroomDataRepository classroomDataRepository;
     private final FanStatusLogRepository fanStatusLogRepository;
 
     @PostConstruct

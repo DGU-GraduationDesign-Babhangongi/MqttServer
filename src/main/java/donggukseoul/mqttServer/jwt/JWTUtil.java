@@ -1,11 +1,17 @@
 package donggukseoul.mqttServer.jwt;
 
+import donggukseoul.mqttServer.service.TokenBlacklistService;
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
@@ -14,10 +20,37 @@ public class JWTUtil {
 
     private SecretKey secretKey;
 
+
     public JWTUtil(@Value("${spring.jwt.secret}")String secret) {
 
 
         secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+    }
+
+    public String validateToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain, TokenBlacklistService tokenBlacklistService) throws IOException, ServletException {
+        String authorization = request.getHeader("Authorization");
+
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            System.out.println("token null");
+            filterChain.doFilter(request, response);
+            return null;
+        }
+
+        System.out.println("authorization now");
+        String token = authorization.split(" ")[1];
+
+        if (isExpired(token)) {
+            System.out.println("token expired");
+            filterChain.doFilter(request, response);
+            return null;
+        }
+
+        if (tokenBlacklistService.isTokenBlacklisted(token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return null;
+        }
+
+        return token;
     }
 
     public String getUsername(String token) {

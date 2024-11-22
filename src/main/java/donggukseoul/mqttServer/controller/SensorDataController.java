@@ -70,17 +70,7 @@ public class SensorDataController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-//        Map<String, Object> response = new HashMap<>();
-//
-//        for (SensorType sensorType : sensorTypes) {
-//            Map<String, Object> sensorData = sensorDataService.getSensorDataBetweenDates(
-//                    sensorType, building, name, startDate, endDate, sortBy, order, page, size);
-//            response.put(sensorType.name(), sensorData);
-//        }
-//
-//        return response;
 
-//        Map<String, Object> response = new HashMap<>();
         Map<String, Object> sensorData = sensorDataService.getCombinedSensorData(sensorTypes, building, name, startDate, endDate, order, page, size);
 
         return sensorData;

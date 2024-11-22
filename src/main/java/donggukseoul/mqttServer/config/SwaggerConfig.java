@@ -25,7 +25,7 @@ public class SwaggerConfig {
                 .components(new io.swagger.v3.oas.models.Components()
                         .addSecuritySchemes(securitySchemeName, new SecurityScheme()
                                 .name(securitySchemeName)
-                                .type(Type.APIKEY) // Bearer 자동 추가 안 함
+                                .type(Type.APIKEY)
                                 .in(In.HEADER)
                                 .description("접두어 Bearer 까지 포함해서 전체 입력")));
     }

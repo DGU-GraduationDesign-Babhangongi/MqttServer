@@ -25,8 +25,6 @@ public class User {
 
     private String areaOfResponsibility;
 
-//    private String securityCode;
-
     private boolean alarmStatus;
 
     private String role;

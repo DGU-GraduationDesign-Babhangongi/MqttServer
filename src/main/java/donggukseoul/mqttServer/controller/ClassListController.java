@@ -4,11 +4,13 @@ import donggukseoul.mqttServer.dto.ClassroomCreateDTO;
 import donggukseoul.mqttServer.dto.ClassroomDTO;
 import donggukseoul.mqttServer.dto.FavoriteClassroomDTO;
 import donggukseoul.mqttServer.service.ClassroomService;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -30,7 +32,6 @@ public class ClassListController {
         return ResponseEntity.ok(classroomService.getClassroomById(id));
     }
 
-    // ID 없이 강의실 생성
     @PostMapping
     public ResponseEntity<ClassroomDTO> createClassroom(@RequestBody ClassroomCreateDTO classroomCreateDto) {
         ClassroomDTO createdClassroom = classroomService.createClassroom(classroomCreateDto);
@@ -63,7 +64,7 @@ public class ClassListController {
     public String toggleFavoriteClassroom(
             @RequestParam String building,
             @RequestParam String name,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws ServletException, IOException {
         return classroomService.toggleFavoriteClassroom(building, name, request);
     }
 
@@ -82,7 +83,7 @@ public class ClassListController {
     public ResponseEntity<Boolean> isFavoriteClassroom(
             @RequestParam String building,
             @RequestParam String name,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws ServletException, IOException {
         boolean isFavorite = classroomService.isFavoriteClassroom(building, name, request);
         return ResponseEntity.ok(isFavorite);
     }

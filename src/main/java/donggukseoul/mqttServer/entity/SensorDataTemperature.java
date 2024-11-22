@@ -21,5 +21,4 @@ public class SensorDataTemperature {
     private LocalDateTime timestamp;
     private Double value;
 
-    // Getters and setters
 }

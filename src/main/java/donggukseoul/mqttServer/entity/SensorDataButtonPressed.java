@@ -19,5 +19,4 @@ public class SensorDataButtonPressed {
     private LocalDateTime timestamp;
     private Boolean value;
 
-    // Getters and setters
 }

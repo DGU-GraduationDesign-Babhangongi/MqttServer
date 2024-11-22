@@ -7,16 +7,20 @@ import donggukseoul.mqttServer.entity.Classroom;
 import donggukseoul.mqttServer.entity.ClassroomDeletionLog;
 import donggukseoul.mqttServer.entity.SensorInstallationLog;
 import donggukseoul.mqttServer.entity.User;
+import donggukseoul.mqttServer.exception.CustomException;
+import donggukseoul.mqttServer.exception.ErrorCode;
 import donggukseoul.mqttServer.jwt.JWTUtil;
 import donggukseoul.mqttServer.repository.ClassroomDeletionLogRepository;
 import donggukseoul.mqttServer.repository.ClassroomRepository;
 import donggukseoul.mqttServer.repository.SensorInstallationLogRepository;
 import donggukseoul.mqttServer.repository.UserRepository;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -32,6 +36,7 @@ public class ClassroomService {
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
     private final ClassroomDeletionLogRepository classroomDeletionLogRepository;
+    private final TokenBlacklistService tokenBlacklistService;
 
     public Stream<ClassroomDTO> getClassrooms() {
         Stream<ClassroomDTO> classroom = classroomRepository.findAll().stream().map(this::convertToDto);
@@ -39,41 +44,34 @@ public class ClassroomService {
     }
     public ClassroomDTO getClassroomById(Long id) {
         Classroom classroom = classroomRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid classroom ID"));
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_CLASSROOM_ID));
         return convertToDto(classroom);
     }
 
     public List<FavoriteClassroomDTO> getClassroomsWithOptions(String building, boolean favoriteFirst, String orderDirection, HttpServletRequest request) {
         String authorization = request.getHeader("Authorization");
 
-        // Authorization 헤더 검증
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             throw new IllegalArgumentException("Invalid token");
         }
 
-        // Bearer 부분 제거 후 토큰 획득
         String token = authorization.split(" ")[1];
 
-        // 토큰 소멸 시간 검증
         if (jwtUtil.isExpired(token)) {
             throw new IllegalArgumentException("Token expired");
         }
 
-        // 토큰에서 username 획득
         String username = jwtUtil.getUsername(token);
 
-        // 사용자 정보 조회
         User user = userRepository.findByUsername(username);
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
 
-        // building 값에 따라 전체 또는 특정 건물의 강의실 목록 조회
         List<Classroom> classrooms = (building == null || building.isEmpty())
                 ? classroomRepository.findAll()
                 : classroomRepository.findByBuilding(building);
 
-        // 즐겨찾기한 강의실 목록과 즐겨찾기하지 않은 강의실 목록으로 분리
         List<FavoriteClassroomDTO> favoritedList = classrooms.stream()
                 .filter(classroom -> user.getFavoriteClassrooms().contains(classroom))
                 .map(classroom -> convertToFavoriteClassroomDto(classroom, true))
@@ -86,13 +84,12 @@ public class ClassroomService {
                 .sorted(getNameComparator(orderDirection))
                 .collect(Collectors.toList());
 
-        // favoriteFirst에 따라 리스트 합치기
         if (favoriteFirst) {
             favoritedList.addAll(nonFavoritedList);
             return favoritedList;
         } else {
             return Stream.concat(favoritedList.stream(), nonFavoritedList.stream())
-                    .sorted(getNameComparator(orderDirection)) // 이름 순서 정렬
+                    .sorted(getNameComparator(orderDirection))
                     .collect(Collectors.toList());
         }
     }
@@ -113,51 +110,36 @@ public class ClassroomService {
                 .building(classroom.getBuilding())
                 .sensorId(classroom.getSensorId())
                 .sensorType(classroom.getSensorType())
-                .isFavorited(isFavorited) // 즐겨찾기 여부 설정
+                .isFavorited(isFavorited)
                 .build();
     }
 
-    public boolean isFavoriteClassroom(String building, String name, HttpServletRequest request) {
-        String authorization = request.getHeader("Authorization");
-
-        // Authorization 헤더 검증
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
+    public boolean isFavoriteClassroom(String building, String name, HttpServletRequest request) throws ServletException, IOException {
+        String token = jwtUtil.validateToken(request, null, null, tokenBlacklistService);
+        if (token == null) {
             throw new IllegalArgumentException("Invalid token");
         }
 
-        // Bearer 부분 제거 후 토큰 획득
-        String token = authorization.split(" ")[1];
-
-        // 토큰 소멸 시간 검증
-        if (jwtUtil.isExpired(token)) {
-            throw new IllegalArgumentException("Token expired");
-        }
-
-        // 토큰에서 username 획득
         String username = jwtUtil.getUsername(token);
 
-        // 사용자 정보 조회
         User user = userRepository.findByUsername(username);
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
 
-        // 강의실 정보 조회
         Classroom classroom = classroomRepository.findByBuildingAndName(building, name)
                 .orElseThrow(() -> new IllegalArgumentException("Classroom not found for given building and name"));
 
-        // 즐겨찾기 여부 반환
         return user.getFavoriteClassrooms().contains(classroom);
     }
 
 
-    // ClassroomCreateDto로 ID 없이 강의실 생성
     public ClassroomDTO createClassroom(ClassroomCreateDTO classroomCreateDto) {
         Classroom classroom = Classroom.builder()
                 .name(classroomCreateDto.getName())
                 .floor(classroomCreateDto.getFloor())
                 .building(classroomCreateDto.getBuilding())
-                .sensorId(classroomCreateDto.getSensorId())  // sensorId는 null일 수 있음
+                .sensorId(classroomCreateDto.getSensorId())
                 .sensorType(classroomCreateDto.getSensorType())
                 .build();
         classroomRepository.save(classroom);
@@ -194,7 +176,6 @@ public class ClassroomService {
         Classroom classroom = classroomRepository.findByBuildingAndName(building, name)
                 .orElseThrow(() -> new IllegalArgumentException("Classroom not found for given building and name"));
 
-        // 삭제 로그 저장
         ClassroomDeletionLog deletionLog = ClassroomDeletionLog.builder()
                 .classroomId(classroom.getId())
                 .reason(reason)
@@ -216,34 +197,12 @@ public class ClassroomService {
 
 
     @Transactional
-    public String toggleFavoriteClassroom(String building, String name, HttpServletRequest request) {
-        String authorization= request.getHeader("Authorization");
-
-        //Authorization 헤더 검증
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-
-            System.out.println("token null");
-//            filterChain.doFilter(request, response);
-
-            //조건이 해당되면 메소드 종료 (필수)
-            return null;
+    public String toggleFavoriteClassroom(String building, String name, HttpServletRequest request) throws ServletException, IOException {
+        String token = jwtUtil.validateToken(request, null, null, tokenBlacklistService);
+        if (token == null) {
+            throw new IllegalArgumentException("Invalid token");
         }
 
-        System.out.println("authorization now");
-        //Bearer 부분 제거 후 순수 토큰만 획득
-        String token = authorization.split(" ")[1];
-
-        //토큰 소멸 시간 검증
-        if (jwtUtil.isExpired(token)) {
-
-            System.out.println("token expired");
-//            filterChain.doFilter(request, response);
-
-            //조건이 해당되면 메소드 종료 (필수)
-            return null;
-        }
-
-        //토큰에서 username과 role 획득
         String username = jwtUtil.getUsername(token);
 
 

@@ -21,5 +21,4 @@ public class SensorDataAmbientNoise {
     private LocalDateTime timestamp;
     private Double value;
 
-    // Getters and setters
 }

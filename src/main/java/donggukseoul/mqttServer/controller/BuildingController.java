@@ -1,4 +1,3 @@
-// BuildingController.java
 package donggukseoul.mqttServer.controller;
 
 import donggukseoul.mqttServer.dto.BuildingCreateDTO;

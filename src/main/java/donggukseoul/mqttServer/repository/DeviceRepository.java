@@ -8,5 +8,4 @@ import java.util.List;
 
 public interface DeviceRepository extends JpaRepository<Device, Long> {
     List<Device> findByClassroom(Classroom classroom);
-    void deleteAllByClassroom(Classroom classroom);
 }

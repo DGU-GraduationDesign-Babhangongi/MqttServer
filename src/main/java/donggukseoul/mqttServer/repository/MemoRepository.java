@@ -15,5 +15,4 @@ public interface MemoRepository extends JpaRepository<Memo, Long> {
 
     List<Memo> findByClassroom(Classroom classroom);
 
-    List<Memo> findByUserAndClassroom(User user, Classroom classroom);
 }

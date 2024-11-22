@@ -24,8 +24,7 @@ public class FanStatusController {
 
     @GetMapping("/{classroom}/fan-logs")
     public ResponseEntity<List<FanStatusLog>> getRecentFanLogs(@PathVariable int classroom) {
-        // Get the most recent 4 fan status logs for the specified classroom
-        Pageable pageable = PageRequest.of(0, 4); // Page size set to 4
+        Pageable pageable = PageRequest.of(0, 4);
         List<FanStatusLog> recentFanLogs = fanStatusLogRepository.findTop4ByClassroomOrderByTimestampDesc(classroom, pageable);
 
         if (recentFanLogs.isEmpty()) {

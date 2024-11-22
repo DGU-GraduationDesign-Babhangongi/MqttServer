@@ -1,17 +1,15 @@
 package donggukseoul.mqttServer.service;
 
-//import donggukseoul.mqttServer.dto.ClassroomDTO;
 import donggukseoul.mqttServer.dto.MemoDTO;
-//import donggukseoul.mqttServer.dto.UserDTO;
 import donggukseoul.mqttServer.entity.Classroom;
 import donggukseoul.mqttServer.entity.Memo;
 import donggukseoul.mqttServer.entity.User;
+import donggukseoul.mqttServer.exception.CustomException;
+import donggukseoul.mqttServer.exception.ErrorCode;
 import donggukseoul.mqttServer.repository.ClassroomRepository;
 import donggukseoul.mqttServer.repository.MemoRepository;
-import donggukseoul.mqttServer.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-//import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -25,13 +23,12 @@ public class MemoService {
 
     private final MemoRepository memoRepository;
     private final ClassroomRepository classroomRepository;
-    private final UserRepository userRepository;
 
     public MemoDTO addMemo(String building, String name, String content, User user) {
 
 
         Classroom classroom = classroomRepository.findByBuildingAndName(building, name)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid classroom ID"));
+                .orElseThrow(() -> new CustomException(ErrorCode.Invalid_CLASSROOM_NAME));
 
         Memo memo = Memo.builder()
                 .user(user)
@@ -46,10 +43,10 @@ public class MemoService {
 
     public void deleteMemo(Long memoId, User user) {
         Memo memo = memoRepository.findById(memoId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid memo ID"));
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_MEMO_ID));
 
         if (!memo.getUser().equals(user)) {
-            throw new SecurityException("You can only delete your own memos");
+            throw new CustomException(ErrorCode.INVALID_USER_ID);
         }
 
         memoRepository.delete(memo);
@@ -66,7 +63,7 @@ public class MemoService {
         Optional<Classroom> classroom = classroomRepository.findByBuildingAndName(building, name);
 
         if (classroom.isEmpty()) {
-            throw new IllegalArgumentException("Invalid classroom information");
+            throw new CustomException(ErrorCode.Invalid_CLASSROOM_NAME);
         }
         return memoRepository.findByClassroom(classroom.get())
                 .stream()
@@ -87,23 +84,4 @@ public class MemoService {
                 .build();
     }
 
-//    private UserDTO convertToUserDTO(User user) {
-//        return UserDTO.builder()
-//                .id(user.getId())
-//                .username(user.getUsername())
-//                .nickname(user.getNickname())
-//                .email(user.getEmail())
-//                .build();
-//    }
-//
-//    private ClassroomDTO convertToClassroomDTO(Classroom classroom) {
-//        return ClassroomDTO.builder()
-//                .id(classroom.getId())
-//                .name(classroom.getName())
-//                .floor(classroom.getFloor())
-//                .building(classroom.getBuilding())
-//                .sensorId(classroom.getSensorId())
-//                .sensorType(classroom.getSensorType())
-//                .build();
-//    }
 }

@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -41,17 +40,6 @@ public class Classroom {
     @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Device> devices = new HashSet<>();
 
-    public void addDevice(Device device) {
-        devices.add(device);
-        device.setClassroom(this);
-    }
-
-    public void removeDevice(Device device) {
-        devices.remove(device);
-        device.setClassroom(null);
-    }
-
-    // 추가 메서드
     public void addFavoritedByUser(User user) {
         favoritedByUsers.add(user);
         user.getFavoriteClassrooms().add(this);

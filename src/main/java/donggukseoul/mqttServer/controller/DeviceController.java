@@ -1,9 +1,7 @@
 package donggukseoul.mqttServer.controller;
 
 import donggukseoul.mqttServer.dto.DeviceDTO;
-import donggukseoul.mqttServer.entity.Device;
 import donggukseoul.mqttServer.service.DeviceService;
-import donggukseoul.mqttServer.service.EmailService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -21,5 +21,4 @@ public class SensorDataTvoc {
     private LocalDateTime timestamp;
     private Double value;
 
-    // Getters and setters
 }

@@ -10,7 +10,13 @@ public enum ErrorCode {
     EMAIL_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "EMAIL-001", "Email not allowed"),
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "EMAIL-002", "Email already exists"),
     INVALID_VERIFICATION_CODE(HttpStatus.UNAUTHORIZED, "VERIFICATION-001", "Invalid verification code"),
-    USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "USER-001", "User already exists");
+    USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "USER-001", "User already exists"),
+    ALLOWED_EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "ALLOWED_EMAIL-001", "Allowed email already exists"),
+    EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "ALLOWED_EMAIL-002", "Email not found"),
+    INVALID_CLASSROOM_ID(HttpStatus.BAD_REQUEST, "CLASSROOM-001", "Invalid classroom ID"),
+    Invalid_CLASSROOM_NAME(HttpStatus.BAD_REQUEST, "CLASSROOM-002", "Invalid classroom name"),
+    INVALID_MEMO_ID(HttpStatus.BAD_REQUEST, "MEMO-001", "Invalid memo ID"),
+    INVALID_USER_ID(HttpStatus.BAD_REQUEST, "USER-002", "Invalid user ID"),;
 
     private final HttpStatus httpStatus;
     private final String code;

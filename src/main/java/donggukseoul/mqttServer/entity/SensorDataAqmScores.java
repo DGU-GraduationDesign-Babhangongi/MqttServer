@@ -20,5 +20,4 @@ public class SensorDataAqmScores {
     private LocalDateTime timestamp;
     private String aqmScores;
 
-    // Getters and setters
 }

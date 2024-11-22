@@ -1,4 +1,3 @@
-// FloorPlanDTO.java
 package donggukseoul.mqttServer.dto;
 
 import lombok.Data;

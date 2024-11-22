@@ -21,6 +21,4 @@ public class SensorDataWaterDetection {
     private LocalDateTime timestamp;
     private Boolean value;
 
-    // Getters and setters
-
 }

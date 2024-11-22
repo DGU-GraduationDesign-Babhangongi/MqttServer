@@ -12,5 +12,5 @@ public class FavoriteClassroomDTO {
     private String building;
     private String sensorId;
     private String sensorType;
-    private boolean isFavorited; // 즐겨찾기 여부
+    private boolean isFavorited;
 }
