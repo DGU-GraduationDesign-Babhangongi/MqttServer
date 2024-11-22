@@ -2,6 +2,9 @@ package donggukseoul.mqttServer.service;
 
 import donggukseoul.mqttServer.dto.JoinDTO;
 import donggukseoul.mqttServer.entity.User;
+import donggukseoul.mqttServer.exception.CustomExceptions.*;
+
+
 import donggukseoul.mqttServer.jwt.JWTUtil;
 import donggukseoul.mqttServer.repository.AllowedEmailRepository;
 import donggukseoul.mqttServer.repository.UserRepository;
@@ -33,18 +36,17 @@ public class JoinService {
     public void joinProcess(JoinDTO joinDTO) throws MessagingException {
 
         if (!verificationService.verifyCode(joinDTO.getEmail(), joinDTO.getSecurityCode())) {
-            throw new IllegalArgumentException("인증 코드가 유효하지 않습니다.");
+            throw new InvalidVerificationCodeException("인증 코드가 유효하지 않습니다.");
         }
 
         if (!allowedEmailService.isAllowedEmail(joinDTO.getEmail())) {
-            throw new IllegalArgumentException("허용되지 않은 이메일입니다.");
+            throw new EmailNotAllowedException("허용되지 않은 이메일입니다.");
         }
 
         Boolean isExist = userRepository.existsByUsername(joinDTO.getUsername());
 
-        if (isExist){
-
-            return;
+        if (isExist) {
+            throw new UserAlreadyExistsException("이미 존재하는 사용자입니다.");
         }
 
         User data = new User();
@@ -64,6 +66,15 @@ public class JoinService {
     }
 
     public void sendVerificationCode(String email) throws MessagingException {
+
+        if (!allowedEmailService.isAllowedEmail(email)) {
+            throw new EmailNotAllowedException("허용되지 않은 이메일입니다.");
+        }
+
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyExistsException("이미 존재하는 이메일입니다.");
+        }
+
         String code = VerificationUtil.generateVerificationCode();
         verificationService.saveVerificationCode(email, code);
         emailService.sendVerificationEmail(email, code);

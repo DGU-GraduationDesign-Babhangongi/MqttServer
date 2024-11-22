@@ -234,28 +234,8 @@ public class SensorDataService {
         // 응답 데이터 초기화
         Map<String, Object> response = new HashMap<>();
         Page<?> sensorDataPage;
-//        List<SensorDataDTO> sensorDataPage;
 
-        // 센서 타입에 따라 적절한 리포지토리에서 데이터를 조회합니다.
         switch (sensorType) {
-//            case ALL:
-//                List<SensorDataDTO> combinedData = new ArrayList<>();
-//
-//                combinedData.addAll(sensorDataTemperatureRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
-//                combinedData.addAll(sensorDataTvocRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
-//                combinedData.addAll(sensorDataAmbientNoiseRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
-//                combinedData.addAll(sensorDataHumidityRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
-//                combinedData.addAll(sensorDataPm2_5MassConcentrationRepository.findAllBySensorIdAndTimestampBetween(sensorId,startDate,endDate));
-//
-//                if (order == SortOrder.ASC) {
-//                    combinedData.sort(Comparator.comparing(SensorDataDTO::getTimestamp));
-//                } else {
-//                    combinedData.sort(Comparator.comparing(SensorDataDTO::getTimestamp).reversed());
-//                }
-//
-//                response.put("sensorType", "ALL");
-//                response.put("data", combinedData);
-//                break;
             case TEMPERATURE:
                 sensorDataPage = sensorDataTemperatureRepository.findBySensorIdAndTimestampBetween(sensorId, startDate, endDate, pageable);
                 response.put("sensorType", "Temperature");
