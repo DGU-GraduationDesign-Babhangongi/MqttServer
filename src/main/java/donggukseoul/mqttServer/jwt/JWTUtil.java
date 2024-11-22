@@ -1,5 +1,7 @@
 package donggukseoul.mqttServer.jwt;
 
+import donggukseoul.mqttServer.exception.CustomException;
+import donggukseoul.mqttServer.exception.ErrorCode;
 import donggukseoul.mqttServer.service.TokenBlacklistService;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
@@ -31,23 +33,17 @@ public class JWTUtil {
         String authorization = request.getHeader("Authorization");
 
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            System.out.println("token null");
-            filterChain.doFilter(request, response);
-            return null;
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
 
-        System.out.println("authorization now");
         String token = authorization.split(" ")[1];
 
         if (isExpired(token)) {
-            System.out.println("token expired");
-            filterChain.doFilter(request, response);
-            return null;
+            throw new CustomException(ErrorCode.TOKEN_EXPIRED);
         }
 
         if (tokenBlacklistService.isTokenBlacklisted(token)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
+            throw new CustomException(ErrorCode.TOKEN_BLACKLISTED);
         }
 
         return token;

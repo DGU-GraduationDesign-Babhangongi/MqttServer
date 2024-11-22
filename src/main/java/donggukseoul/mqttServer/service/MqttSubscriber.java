@@ -8,20 +8,24 @@ import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-
 @Service
 public class MqttSubscriber {
+
+    private static final Logger logger = LoggerFactory.getLogger(MqttSubscriber.class);
+    private static final String BROKER_URL = "tcp://donggukseoul.com:1883";
+    private static final String TOPIC_FILTER = "meraki/v1/mt/+/ble/+/#";
 
     private MqttClient mqttClient;
 
@@ -30,203 +34,182 @@ public class MqttSubscriber {
 
     @Autowired
     private SensorDataTemperatureRepository sensorDataTemperatureRepository;
-
     @Autowired
     private SensorDataTvocRepository sensorDataTvocRepository;
-
     @Autowired
     private SensorDataAmbientNoiseRepository sensorDataAmbientNoiseRepository;
-
     @Autowired
     private SensorDataIaqIndexRepository sensorDataIaqIndexRepository;
-
     @Autowired
     private SensorDataAqmScoresRepository sensorDataAqmScoresRepository;
-
     @Autowired
     private SensorDataHumidityRepository sensorDataHumidityRepository;
-
     @Autowired
     private SensorDataUsbPoweredRepository sensorDataUsbPoweredRepository;
-
     @Autowired
     private SensorDataButtonPressedRepository sensorDataButtonPressedRepository;
-
-
     @Autowired
     private SensorDataWaterDetectionRepository sensorDataWaterDetectionRepository;
-
     @Autowired
     private SensorDataPm2_5MassConcentrationRepository sensorDataPm2_5MassConcentrationRepository;
+
     @PostConstruct
     public void init() {
-        File pahoFolder = new File("/paho");
-        if (!pahoFolder.exists() && !pahoFolder.mkdir()) {
-            throw new RuntimeException("Failed to create the /paho folder");
-        }
-        System.setProperty("java.io.tmpdir", "/paho");
         try {
-            // MQTT 브로커 주소와 클라이언트 ID 설정
-            String brokerUrl = "tcp://donggukseoul.com:1883"; // 여기에 실제 브로커 주소를 입력하세요
-
-            mqttClient = new MqttClient(brokerUrl, clientId);
+            mqttClient = new MqttClient(BROKER_URL, clientId);
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(true);
 
-            // 브로커에 연결
             mqttClient.connect(options);
-            System.out.println("MQTT 브로커에 연결 성공: " + brokerUrl);
+            logger.info("MQTT 브로커에 연결 성공: {}", BROKER_URL);
 
-            // 구독 시작
             subscribe();
         } catch (MqttException e) {
-            e.printStackTrace();
-            System.out.println("MQTT 연결 실패: " + e.getMessage());
+            logger.error("MQTT 연결 실패: {}", e.getMessage(), e);
         }
     }
 
     public void subscribe() throws MqttException {
-        String topicFilter = "meraki/v1/mt/+/ble/+/#";
-        mqttClient.subscribe(topicFilter, new IMqttMessageListener() {
+        mqttClient.subscribe(TOPIC_FILTER, new IMqttMessageListener() {
             @Override
             public void messageArrived(String topic, org.eclipse.paho.client.mqttv3.MqttMessage message) throws Exception {
                 String payload = new String(message.getPayload());
-                System.out.println("메시지 도착 - 토픽: " + topic + ", 페이로드: " + payload);
+                logger.info("메시지 도착 - 토픽: {}, 페이로드: {}", topic, payload);
 
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode jsonNode = mapper.readTree(payload);
 
                 String sensorId = extractSensorIdFromTopic(topic);
-
-                String timestampStr = jsonNode.get("ts").asText();
-                DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("Asia/Seoul"));
-                Instant instant = Instant.from(formatter.parse(timestampStr));
-                LocalDateTime timestamp = LocalDateTime.ofInstant(instant, ZoneId.of("Asia/Seoul"));
-                System.out.println("타임스탬프 파싱 성공: " + timestamp);
+                LocalDateTime timestamp = parseTimestamp(jsonNode.get("ts").asText());
 
                 if (topic.contains("waterDetection")) {
-                    // Extract water detection data
-                    boolean value = jsonNode.get("wet").asBoolean();
-
-                    // Save water detection data
-                    SensorDataWaterDetection sensorDataWaterDetection = new SensorDataWaterDetection();
-                    sensorDataWaterDetection.setSensorId(sensorId);
-                    sensorDataWaterDetection.setTimestamp(timestamp);
-                    sensorDataWaterDetection.setValue(value);
-                    sensorDataWaterDetectionRepository.save(sensorDataWaterDetection);
-                    System.out.println("Water detection data saved: " + sensorDataWaterDetection);
+                    saveWaterDetectionData(sensorId, timestamp, jsonNode.get("wet").asBoolean());
                 } else if (topic.contains("temperature")) {
-                    // Extract temperature data
-                    Double temperatureValue = jsonNode.get("celsius").asDouble();
-
-                    // Save temperature data
-                    SensorDataTemperature sensorDataTemperature = new SensorDataTemperature();
-                    sensorDataTemperature.setSensorId(sensorId);
-                    sensorDataTemperature.setTimestamp(timestamp);
-                    sensorDataTemperature.setValue(temperatureValue);
-                    sensorDataTemperatureRepository.save(sensorDataTemperature);
-                    System.out.println("Temperature data saved: " + sensorDataTemperature);
+                    saveTemperatureData(sensorId, timestamp, jsonNode.get("celsius").asDouble());
                 } else if (topic.contains("tvoc")) {
-                    // Extract TVOC data
-                    Double tvocValue = jsonNode.get("tvoc").asDouble();
-
-                    // Save TVOC data
-                    SensorDataTvoc sensorDataTvoc = new SensorDataTvoc();
-                    sensorDataTvoc.setSensorId(sensorId);
-                    sensorDataTvoc.setTimestamp(timestamp);
-                    sensorDataTvoc.setValue(tvocValue);
-                    sensorDataTvocRepository.save(sensorDataTvoc);
-                    System.out.println("TVOC data saved: " + sensorDataTvoc);
+                    saveTvocData(sensorId, timestamp, jsonNode.get("tvoc").asDouble());
                 } else if (topic.contains("ambientNoise")) {
-                    // Extract ambient noise data
-                    Double ambientNoiseValue = jsonNode.get("ambientNoise").asDouble();
-
-                    // Save ambient noise data
-                    SensorDataAmbientNoise sensorDataAmbientNoise = new SensorDataAmbientNoise();
-                    sensorDataAmbientNoise.setSensorId(sensorId);
-                    sensorDataAmbientNoise.setTimestamp(timestamp);
-                    sensorDataAmbientNoise.setValue(ambientNoiseValue);
-                    sensorDataAmbientNoiseRepository.save(sensorDataAmbientNoise);
-                    System.out.println("Ambient noise data saved: " + sensorDataAmbientNoise);
+                    saveAmbientNoiseData(sensorId, timestamp, jsonNode.get("ambientNoise").asDouble());
                 } else if (topic.contains("iaqIndex")) {
-                    // Extract IAQ index data
-                    Double iaqIndexValue = jsonNode.get("iaqIndex").asDouble();
-
-                    // Save IAQ index data
-                    SensorDataIaqIndex sensorDataIaqIndex = new SensorDataIaqIndex();
-                    sensorDataIaqIndex.setSensorId(sensorId);
-                    sensorDataIaqIndex.setTimestamp(timestamp);
-                    sensorDataIaqIndex.setValue(iaqIndexValue);
-                    sensorDataIaqIndexRepository.save(sensorDataIaqIndex);
-                    System.out.println("IAQ index data saved: " + sensorDataIaqIndex);
+                    saveIaqIndexData(sensorId, timestamp, jsonNode.get("iaqIndex").asDouble());
                 } else if (topic.contains("aqmScores")) {
-                    // Extract AQM scores data
-                    String aqmScores = jsonNode.toString();
-
-                    // Save AQM scores data
-                    SensorDataAqmScores sensorDataAqmScores = new SensorDataAqmScores();
-                    sensorDataAqmScores.setSensorId(sensorId);
-                    sensorDataAqmScores.setTimestamp(timestamp);
-                    sensorDataAqmScores.setAqmScores(aqmScores);
-                    sensorDataAqmScoresRepository.save(sensorDataAqmScores);
-                    System.out.println("AQM scores data saved: " + sensorDataAqmScores);
+                    saveAqmScoresData(sensorId, timestamp, jsonNode.toString());
                 } else if (topic.contains("humidity")) {
-                    // Extract humidity data
-                    Double humidityValue = jsonNode.get("humidity").asDouble();
-
-                    // Save humidity data
-                    SensorDataHumidity sensorDataHumidity = new SensorDataHumidity();
-                    sensorDataHumidity.setSensorId(sensorId);
-                    sensorDataHumidity.setTimestamp(timestamp);
-                    sensorDataHumidity.setValue(humidityValue);
-                    sensorDataHumidityRepository.save(sensorDataHumidity);
-                    System.out.println("Humidity data saved: " + sensorDataHumidity);
+                    saveHumidityData(sensorId, timestamp, jsonNode.get("humidity").asDouble());
                 } else if (topic.contains("usbPowered")) {
-                    // Extract USB powered data
-                    Boolean usbPoweredValue = jsonNode.get("usbPowered").asBoolean();
-
-                    // Save USB powered data
-                    SensorDataUsbPowered sensorDataUsbPowered = new SensorDataUsbPowered();
-                    sensorDataUsbPowered.setSensorId(sensorId);
-                    sensorDataUsbPowered.setTimestamp(timestamp);
-                    sensorDataUsbPowered.setValue(usbPoweredValue);
-                    sensorDataUsbPoweredRepository.save(sensorDataUsbPowered);
-                    System.out.println("USB powered data saved: " + sensorDataUsbPowered);
+                    saveUsbPoweredData(sensorId, timestamp, jsonNode.get("usbPowered").asBoolean());
                 } else if (topic.contains("buttonPressed")) {
-                    // Extract button pressed data
-                    Boolean buttonPressedValue = jsonNode.get("buttonPressed").asBoolean();
-
-                    // Save button pressed data
-                    SensorDataButtonPressed sensorDataButtonPressed = new SensorDataButtonPressed();
-                    sensorDataButtonPressed.setSensorId(sensorId);
-                    sensorDataButtonPressed.setTimestamp(timestamp);
-                    sensorDataButtonPressed.setValue(buttonPressedValue);
-                    sensorDataButtonPressedRepository.save(sensorDataButtonPressed);
-                    System.out.println("Button pressed data saved: " + sensorDataButtonPressed);
+                    saveButtonPressedData(sensorId, timestamp, jsonNode.get("buttonPressed").asBoolean());
                 } else if (topic.contains("PM2_5MassConcentration")) {
-                    // Extract PM2_5 data
-                    Double PM2_5Value = jsonNode.get("PM2_5MassConcentration").asDouble();
-
-                    // Save PM2_5 data
-                    SensorDataPm2_5MassConcentration sensorDataPm2_5MassConcentration = new SensorDataPm2_5MassConcentration();
-                    sensorDataPm2_5MassConcentration.setSensorId(sensorId);
-                    sensorDataPm2_5MassConcentration.setTimestamp(timestamp);
-                    sensorDataPm2_5MassConcentration.setValue(PM2_5Value);
-                    sensorDataPm2_5MassConcentrationRepository.save(sensorDataPm2_5MassConcentration);
-                    System.out.println("PM2_5 data saved: " + sensorDataPm2_5MassConcentration);
+                    savePm2_5MassConcentrationData(sensorId, timestamp, jsonNode.get("PM2_5MassConcentration").asDouble());
                 } else {
-                    System.out.println("Unknown topic: " + topic);
+                    logger.warn("Unknown topic: {}", topic);
                 }
             }
         });
-        System.out.println("MQTT 구독 시작: " + topicFilter);
+        logger.info("MQTT 구독 시작: {}", TOPIC_FILTER);
     }
 
     private String extractSensorIdFromTopic(String topic) {
         String[] parts = topic.split("/");
         String sensorId = parts[5];
-        System.out.println("센서 ID 추출: " + sensorId);
+        logger.info("센서 ID 추출: {}", sensorId);
         return sensorId;
     }
 
+    private LocalDateTime parseTimestamp(String timestampStr) {
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("Asia/Seoul"));
+        Instant instant = Instant.from(formatter.parse(timestampStr));
+        return LocalDateTime.ofInstant(instant, ZoneId.of("Asia/Seoul"));
+    }
+
+    private void saveWaterDetectionData(String sensorId, LocalDateTime timestamp, boolean value) {
+        SensorDataWaterDetection data = new SensorDataWaterDetection();
+        data.setSensorId(sensorId);
+        data.setTimestamp(timestamp);
+        data.setValue(value);
+        sensorDataWaterDetectionRepository.save(data);
+        logger.info("Water detection data saved: {}", data);
+    }
+
+    private void saveTemperatureData(String sensorId, LocalDateTime timestamp, double value) {
+        SensorDataTemperature data = new SensorDataTemperature();
+        data.setSensorId(sensorId);
+        data.setTimestamp(timestamp);
+        data.setValue(value);
+        sensorDataTemperatureRepository.save(data);
+        logger.info("Temperature data saved: {}", data);
+    }
+
+    private void saveTvocData(String sensorId, LocalDateTime timestamp, double value) {
+        SensorDataTvoc data = new SensorDataTvoc();
+        data.setSensorId(sensorId);
+        data.setTimestamp(timestamp);
+        data.setValue(value);
+        sensorDataTvocRepository.save(data);
+        logger.info("TVOC data saved: {}", data);
+    }
+
+    private void saveAmbientNoiseData(String sensorId, LocalDateTime timestamp, double value) {
+        SensorDataAmbientNoise data = new SensorDataAmbientNoise();
+        data.setSensorId(sensorId);
+        data.setTimestamp(timestamp);
+        data.setValue(value);
+        sensorDataAmbientNoiseRepository.save(data);
+        logger.info("Ambient noise data saved: {}", data);
+    }
+
+    private void saveIaqIndexData(String sensorId, LocalDateTime timestamp, double value) {
+        SensorDataIaqIndex data = new SensorDataIaqIndex();
+        data.setSensorId(sensorId);
+        data.setTimestamp(timestamp);
+        data.setValue(value);
+        sensorDataIaqIndexRepository.save(data);
+        logger.info("IAQ index data saved: {}", data);
+    }
+
+    private void saveAqmScoresData(String sensorId, LocalDateTime timestamp, String value) {
+        SensorDataAqmScores data = new SensorDataAqmScores();
+        data.setSensorId(sensorId);
+        data.setTimestamp(timestamp);
+        data.setAqmScores(value);
+        sensorDataAqmScoresRepository.save(data);
+        logger.info("AQM scores data saved: {}", data);
+    }
+
+    private void saveHumidityData(String sensorId, LocalDateTime timestamp, double value) {
+        SensorDataHumidity data = new SensorDataHumidity();
+        data.setSensorId(sensorId);
+        data.setTimestamp(timestamp);
+        data.setValue(value);
+        sensorDataHumidityRepository.save(data);
+        logger.info("Humidity data saved: {}", data);
+    }
+
+    private void saveUsbPoweredData(String sensorId, LocalDateTime timestamp, boolean value) {
+        SensorDataUsbPowered data = new SensorDataUsbPowered();
+        data.setSensorId(sensorId);
+        data.setTimestamp(timestamp);
+        data.setValue(value);
+        sensorDataUsbPoweredRepository.save(data);
+        logger.info("USB powered data saved: {}", data);
+    }
+
+    private void saveButtonPressedData(String sensorId, LocalDateTime timestamp, boolean value) {
+        SensorDataButtonPressed data = new SensorDataButtonPressed();
+        data.setSensorId(sensorId);
+        data.setTimestamp(timestamp);
+        data.setValue(value);
+        sensorDataButtonPressedRepository.save(data);
+        logger.info("Button pressed data saved: {}", data);
+    }
+
+    private void savePm2_5MassConcentrationData(String sensorId, LocalDateTime timestamp, double value) {
+        SensorDataPm2_5MassConcentration data = new SensorDataPm2_5MassConcentration();
+        data.setSensorId(sensorId);
+        data.setTimestamp(timestamp);
+        data.setValue(value);
+        sensorDataPm2_5MassConcentrationRepository.save(data);
+        logger.info("PM2_5 data saved: {}", data);
+    }
 }

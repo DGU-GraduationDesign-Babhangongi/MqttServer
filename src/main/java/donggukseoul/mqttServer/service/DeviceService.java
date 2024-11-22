@@ -4,6 +4,8 @@ import donggukseoul.mqttServer.dto.DeviceDTO;
 import donggukseoul.mqttServer.entity.Classroom;
 import donggukseoul.mqttServer.entity.Device;
 import donggukseoul.mqttServer.entity.User;
+import donggukseoul.mqttServer.exception.CustomException;
+import donggukseoul.mqttServer.exception.ErrorCode;
 import donggukseoul.mqttServer.repository.ClassroomRepository;
 import donggukseoul.mqttServer.repository.DeviceRepository;
 import donggukseoul.mqttServer.repository.UserRepository;
@@ -27,7 +29,7 @@ public class DeviceService {
 
     public List<DeviceDTO> getDevicesByClassroom(String building, String name) {
         Classroom classroom = classroomRepository.findByBuildingAndName(building, name)
-                .orElseThrow(() -> new IllegalArgumentException("Classroom not found for given building and name"));
+                .orElseThrow(() -> new CustomException(ErrorCode.CLASSROOM_NOT_FOUND));
         return deviceRepository.findByClassroom(classroom).stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -35,7 +37,7 @@ public class DeviceService {
 
     public DeviceDTO toggleDeviceStatus(Long deviceId) throws MessagingException {
         Device device = deviceRepository.findById(deviceId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid device ID"));
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_DEVICE_ID));
         device.setStatus(!device.isStatus());
         DeviceDTO deviceDTO = convertToDTO(deviceRepository.save(device));
 
@@ -48,7 +50,7 @@ public class DeviceService {
 
     public DeviceDTO addDeviceToClassroom(String building, String name, String type) {
         Classroom classroom = classroomRepository.findByBuildingAndName(building, name)
-                .orElseThrow(() -> new IllegalArgumentException("Classroom not found for given building and name"));
+                .orElseThrow(() -> new CustomException(ErrorCode.CLASSROOM_NOT_FOUND));
         Device device = Device.builder()
                 .type(type)
                 .status(false)
@@ -59,7 +61,7 @@ public class DeviceService {
 
     public void removeDevice(Long deviceId) {
         if (!deviceRepository.existsById(deviceId)) {
-            throw new IllegalArgumentException("Device ID does not exist");
+            throw new CustomException(ErrorCode.INVALID_DEVICE_ID);
         }
         deviceRepository.deleteById(deviceId);
     }

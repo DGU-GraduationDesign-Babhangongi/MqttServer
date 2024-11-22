@@ -95,7 +95,7 @@ public class JoinService {
     public User getUserFromRequest(HttpServletRequest request) throws ServletException, IOException {
         String token = jwtUtil.validateToken(request,null,null, tokenBlacklistService);
         if (token == null) {
-            throw new IllegalArgumentException("Invalid token");
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
 
         //토큰에서 username과 role 획득

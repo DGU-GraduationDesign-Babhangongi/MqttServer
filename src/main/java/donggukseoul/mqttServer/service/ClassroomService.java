@@ -48,24 +48,15 @@ public class ClassroomService {
         return convertToDto(classroom);
     }
 
-    public List<FavoriteClassroomDTO> getClassroomsWithOptions(String building, boolean favoriteFirst, String orderDirection, HttpServletRequest request) {
-        String authorization = request.getHeader("Authorization");
+    public List<FavoriteClassroomDTO> getClassroomsWithOptions(String building, boolean favoriteFirst, String orderDirection, HttpServletRequest request) throws ServletException, IOException {
 
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Invalid token");
-        }
-
-        String token = authorization.split(" ")[1];
-
-        if (jwtUtil.isExpired(token)) {
-            throw new IllegalArgumentException("Token expired");
-        }
+        String token = jwtUtil.validateToken(request, null, null, tokenBlacklistService);
 
         String username = jwtUtil.getUsername(token);
 
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new IllegalArgumentException("User not found");
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
 
         List<Classroom> classrooms = (building == null || building.isEmpty())
@@ -115,20 +106,18 @@ public class ClassroomService {
     }
 
     public boolean isFavoriteClassroom(String building, String name, HttpServletRequest request) throws ServletException, IOException {
+
         String token = jwtUtil.validateToken(request, null, null, tokenBlacklistService);
-        if (token == null) {
-            throw new IllegalArgumentException("Invalid token");
-        }
 
         String username = jwtUtil.getUsername(token);
 
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new IllegalArgumentException("User not found");
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
 
         Classroom classroom = classroomRepository.findByBuildingAndName(building, name)
-                .orElseThrow(() -> new IllegalArgumentException("Classroom not found for given building and name"));
+                .orElseThrow(() -> new CustomException(ErrorCode.CLASSROOM_NOT_FOUND));
 
         return user.getFavoriteClassrooms().contains(classroom);
     }
@@ -198,24 +187,21 @@ public class ClassroomService {
 
     @Transactional
     public String toggleFavoriteClassroom(String building, String name, HttpServletRequest request) throws ServletException, IOException {
+
         String token = jwtUtil.validateToken(request, null, null, tokenBlacklistService);
-        if (token == null) {
-            throw new IllegalArgumentException("Invalid token");
-        }
 
         String username = jwtUtil.getUsername(token);
 
-
         Long classroomId = classroomRepository.findByBuildingAndName(building, name)
-                .orElseThrow(() -> new IllegalArgumentException("Classroom not found for given building and name"))
+                .orElseThrow(() -> new CustomException(ErrorCode.CLASSROOM_NOT_FOUND))
                 .getId();
         Long userId = userRepository.findByUsername(username).getId();
 
 
         Classroom classroom = classroomRepository.findById(classroomId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid classroom ID"));
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_CLASSROOM_ID));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_USER_ID));
 
         if (classroom.getFavoritedByUsers().contains(user)) {
             classroom.removeFavoritedByUser(user);

@@ -73,7 +73,7 @@ public class ClassListController {
             @RequestParam(required = false) String building,
             @RequestParam(defaultValue = "true") boolean favoriteFirst,
             @RequestParam(defaultValue = "asc") String orderDirection,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws ServletException, IOException {
 
         List<FavoriteClassroomDTO> classrooms = classroomService.getClassroomsWithOptions(building, favoriteFirst, orderDirection, request);
         return ResponseEntity.ok(classrooms);
