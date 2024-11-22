@@ -33,7 +33,10 @@ public class JWTUtil {
         String authorization = request.getHeader("Authorization");
 
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
+            System.out.println("token null");
+            filterChain.doFilter(request, response);
+            return null;
+//            throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
 
         String token = authorization.split(" ")[1];

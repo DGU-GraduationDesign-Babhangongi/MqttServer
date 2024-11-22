@@ -52,6 +52,10 @@ public class ClassroomService {
 
         String token = jwtUtil.validateToken(request, null, null, tokenBlacklistService);
 
+        if (token == null) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
         String username = jwtUtil.getUsername(token);
 
         User user = userRepository.findByUsername(username);
@@ -108,6 +112,10 @@ public class ClassroomService {
     public boolean isFavoriteClassroom(String building, String name, HttpServletRequest request) throws ServletException, IOException {
 
         String token = jwtUtil.validateToken(request, null, null, tokenBlacklistService);
+
+        if (token == null) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
 
         String username = jwtUtil.getUsername(token);
 
@@ -189,6 +197,10 @@ public class ClassroomService {
     public String toggleFavoriteClassroom(String building, String name, HttpServletRequest request) throws ServletException, IOException {
 
         String token = jwtUtil.validateToken(request, null, null, tokenBlacklistService);
+
+        if (token == null) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
 
         String username = jwtUtil.getUsername(token);
 
