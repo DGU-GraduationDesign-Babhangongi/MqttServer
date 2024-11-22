@@ -2,8 +2,6 @@ package donggukseoul.mqttServer.jwt;
 
 import donggukseoul.mqttServer.dto.CustomUserDetails;
 import donggukseoul.mqttServer.entity.User;
-import donggukseoul.mqttServer.exception.CustomException;
-import donggukseoul.mqttServer.exception.ErrorCode;
 import donggukseoul.mqttServer.service.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,7 +26,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String token = jwtUtil.validateToken(request, response, filterChain, tokenBlacklistService);
         if (token == null) {
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
+            return;
         }
 
         //토큰에서 username과 role 획득
