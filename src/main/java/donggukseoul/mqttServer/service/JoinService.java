@@ -2,9 +2,11 @@ package donggukseoul.mqttServer.service;
 
 import donggukseoul.mqttServer.dto.JoinDTO;
 import donggukseoul.mqttServer.entity.User;
-import donggukseoul.mqttServer.exception.CustomExceptions.*;
+//import donggukseoul.mqttServer.exception.CustomExceptions.*;
 
 
+import donggukseoul.mqttServer.exception.CustomException;
+import donggukseoul.mqttServer.exception.ErrorCode;
 import donggukseoul.mqttServer.jwt.JWTUtil;
 import donggukseoul.mqttServer.repository.AllowedEmailRepository;
 import donggukseoul.mqttServer.repository.UserRepository;
@@ -33,20 +35,24 @@ public class JoinService {
     private final AllowedEmailService allowedEmailService;
 
 
-    public void joinProcess(JoinDTO joinDTO) throws MessagingException {
+    public void joinProcess(JoinDTO joinDTO) {
 
         if (!verificationService.verifyCode(joinDTO.getEmail(), joinDTO.getSecurityCode())) {
-            throw new InvalidVerificationCodeException("인증 코드가 유효하지 않습니다.");
+            throw new CustomException(ErrorCode.INVALID_VERIFICATION_CODE);
         }
 
         if (!allowedEmailService.isAllowedEmail(joinDTO.getEmail())) {
-            throw new EmailNotAllowedException("허용되지 않은 이메일입니다.");
+            throw new CustomException(ErrorCode.EMAIL_NOT_ALLOWED);
         }
 
         Boolean isExist = userRepository.existsByUsername(joinDTO.getUsername());
 
         if (isExist) {
-            throw new UserAlreadyExistsException("이미 존재하는 사용자입니다.");
+            throw new CustomException(ErrorCode.USER_ALREADY_EXISTS);
+        }
+
+        if (userRepository.existsByEmail(joinDTO.getEmail())) {
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
         User data = new User();
@@ -68,11 +74,11 @@ public class JoinService {
     public void sendVerificationCode(String email) throws MessagingException {
 
         if (!allowedEmailService.isAllowedEmail(email)) {
-            throw new EmailNotAllowedException("허용되지 않은 이메일입니다.");
+            throw new CustomException(ErrorCode.EMAIL_NOT_ALLOWED);
         }
 
         if (userRepository.existsByEmail(email)) {
-            throw new EmailAlreadyExistsException("이미 존재하는 이메일입니다.");
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
         String code = VerificationUtil.generateVerificationCode();
