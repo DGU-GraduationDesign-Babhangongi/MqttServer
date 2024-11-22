@@ -36,18 +36,9 @@ public class JWTUtil {
             System.out.println("token null");
             filterChain.doFilter(request, response);
             return null;
-//            throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
 
         String token = authorization.split(" ")[1];
-
-//        if (isExpired(token)) {
-//            throw new CustomException(ErrorCode.TOKEN_EXPIRED);
-//        }
-//
-//        if (tokenBlacklistService.isTokenBlacklisted(token)) {
-//            throw new CustomException(ErrorCode.TOKEN_BLACKLISTED);
-//        }
 
         return token;
     }
