@@ -42,7 +42,7 @@ public class DeviceService {
         DeviceDTO deviceDTO = convertToDTO(deviceRepository.save(device));
 
         if (device.isStatus()) {
-            notifyUsers(device.getClassroom());
+            notifyUsers(device);
         }
 
         return deviceDTO;
@@ -70,11 +70,11 @@ public class DeviceService {
         return new DeviceDTO(device.getId(), device.getType(), device.isStatus());
     }
 
-    private void notifyUsers(Classroom classroom) throws MessagingException {
-        List<User> users = userRepository.findByAreaOfResponsibility(classroom.getBuilding());
+    private void notifyUsers(Device device) throws MessagingException {
+        List<User> users = userRepository.findByAreaOfResponsibility(device.getClassroom().getBuilding());
         for (User user : users) {
             if (user.isAlarmStatus()) {
-                emailService.sendNotificationEmail(user.getEmail(), classroom.getName());
+                emailService.sendNotificationEmail(user.getEmail(), device);
             }
         }
     }

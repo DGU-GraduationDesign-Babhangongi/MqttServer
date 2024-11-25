@@ -1,5 +1,6 @@
 package donggukseoul.mqttServer.service;
 
+import donggukseoul.mqttServer.entity.Device;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class EmailService {
         mailSender.send(message);
     }
 
-    public void sendNotificationEmail(String to, String classroomName) throws MessagingException {
+    public void sendNotificationEmail(String to, Device device) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -43,7 +44,7 @@ public class EmailService {
         String htmlContent = "<html>" +
                 "<body>" +
                 "<h1>제어기기 상태 변경 알림</h1>" +
-                "<p>관할구역 " + classroomName + "의 제어기기가 켜졌습니다.</p>" +
+                "<p>관할구역 " + device.getClassroom().getBuilding() + " " + device.getClassroom().getName() + "의 " + device.getType() + "가 켜졌습니다.</p>" +
                 "</body>" +
                 "</html>";
 
