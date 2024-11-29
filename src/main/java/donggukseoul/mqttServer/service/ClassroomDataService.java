@@ -12,6 +12,9 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Service
 @RequiredArgsConstructor
 public class ClassroomDataService {
@@ -55,13 +58,19 @@ public class ClassroomDataService {
 
             for (JsonNode dataNode : dataArray) {
                 int classroom = dataNode.path("강의실").asInt();
-                String time = dataNode.path("시간").asText();
+                String utcTime = dataNode.path("시간").asText();
                 String fanStatus = dataNode.path("fan").asText(); // 팬 상태
+
+
+                // Parse UTC time and convert to KST
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                LocalDateTime utcDateTime = LocalDateTime.parse(utcTime, formatter);
+                LocalDateTime kstDateTime = utcDateTime.plusHours(9); // UTC + 9시간
 
                 // Save fan status log to DB
                 FanStatusLog fanStatusLog = FanStatusLog.builder()
                         .classroom(classroom)
-                        .timestamp(time)
+                        .timestamp(kstDateTime.toString())
                         .fanStatus(fanStatus)
                         .build();
 
