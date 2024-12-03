@@ -24,5 +24,8 @@ public class SensorDataTvoc extends SensorData {
     private Double value;
 
     public SensorDataTvoc(String sensorId, LocalDateTime timestamp, double tvoc) {
+        this.sensorId = sensorId;
+        this.timestamp = timestamp;
+        this.value = tvoc;
     }
 }

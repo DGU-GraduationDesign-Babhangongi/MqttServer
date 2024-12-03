@@ -22,5 +22,8 @@ public class SensorDataHumidity extends SensorData {
     private Double value;
 
     public SensorDataHumidity(String sensorId, LocalDateTime timestamp, double humidity) {
+        this.sensorId = sensorId;
+        this.timestamp = timestamp;
+        this.value = humidity;
     }
 }

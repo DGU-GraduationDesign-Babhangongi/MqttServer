@@ -57,25 +57,35 @@ public class MqttSubscriber {
         mqttClient.subscribe(TOPIC_FILTER, new IMqttMessageListener() {
             @Override
             public void messageArrived(String topic, org.eclipse.paho.client.mqttv3.MqttMessage message) throws Exception {
-                String payload = new String(message.getPayload());
-                logger.info("메시지 도착 - 토픽: {}, 페이로드: {}", topic, payload);
+                try {
+                    String payload = new String(message.getPayload());
+                    logger.info("메시지 도착 - 토픽: {}, 페이로드: {}", topic, payload);
+                    SensorType sensorType = SensorType.fromTopic(topic);
+                    if (sensorType == null) {
+                        logger.debug("유효하지 않은 센서 타입의 토픽 무시: {}", topic);
+                        return;
+                    }
 
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode jsonNode = mapper.readTree(payload);
+                    ObjectMapper mapper = new ObjectMapper();
+                    JsonNode jsonNode = mapper.readTree(payload);
 
-                String sensorId = extractSensorIdFromTopic(topic);
-                LocalDateTime timestamp = parseTimestamp(jsonNode.get("ts").asText());
+                    String sensorId = extractSensorIdFromTopic(topic);
+                    LocalDateTime timestamp = parseTimestamp(jsonNode.get("ts").asText());
 
-                SensorType sensorType = SensorType.fromTopic(topic);
-                SensorDataRepository repository = (SensorDataRepository) applicationContext.getBean(sensorType.getRepositoryClass());
+                    SensorDataRepository repository = (SensorDataRepository) applicationContext.getBean(sensorType.getRepositoryClass());
 
-                SensorData data = createSensorData(sensorType, sensorId, timestamp, jsonNode);
-                repository.save(data);
-                logger.info("{} data saved: {}", sensorType, data);
+                    SensorData data = createSensorData(sensorType, sensorId, timestamp, jsonNode);
+                    repository.save(data);
+
+                    logger.info("{} data saved: {}", sensorType, data);
+                } catch (Exception e) {
+                    logger.error("메시지 처리 중 오류 발생: {}", e.getMessage(), e);
+                }
             }
         });
         logger.info("MQTT 구독 시작: {}", TOPIC_FILTER);
     }
+
 
     private String extractSensorIdFromTopic(String topic) {
         String[] parts = topic.split("/");

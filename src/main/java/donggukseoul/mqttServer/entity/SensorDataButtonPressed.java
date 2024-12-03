@@ -22,5 +22,8 @@ public class SensorDataButtonPressed extends SensorData {
     private Boolean value;
 
     public SensorDataButtonPressed(String sensorId, LocalDateTime timestamp, boolean buttonPressed) {
+        this.sensorId = sensorId;
+        this.timestamp = timestamp;
+        this.value = buttonPressed;
     }
 }

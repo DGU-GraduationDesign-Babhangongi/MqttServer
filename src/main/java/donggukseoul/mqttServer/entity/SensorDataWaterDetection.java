@@ -24,5 +24,8 @@ public class SensorDataWaterDetection extends SensorData {
     private Boolean value;
 
     public SensorDataWaterDetection(String sensorId, LocalDateTime timestamp, boolean wet) {
+        this.sensorId = sensorId;
+        this.timestamp = timestamp;
+        this.value = wet;
     }
 }

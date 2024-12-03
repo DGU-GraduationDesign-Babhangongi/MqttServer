@@ -24,5 +24,8 @@ public class SensorDataIaqIndex extends SensorData {
     private Double value;
 
     public SensorDataIaqIndex(String sensorId, LocalDateTime timestamp, double iaqIndex) {
+        this.sensorId = sensorId;
+        this.timestamp = timestamp;
+        this.value = iaqIndex;
     }
 }

@@ -22,5 +22,8 @@ public class SensorDataUsbPowered extends SensorData {
     private Boolean value;
 
     public SensorDataUsbPowered(String sensorId, LocalDateTime timestamp, boolean usbPowered) {
+        this.sensorId = sensorId;
+        this.timestamp = timestamp;
+        this.value = usbPowered;
     }
 }

@@ -24,5 +24,8 @@ public class SensorDataAmbientNoise extends SensorData {
     private Double value;
 
     public SensorDataAmbientNoise(String sensorId, LocalDateTime timestamp, double ambientNoise) {
+        this.sensorId = sensorId;
+        this.timestamp = timestamp;
+        this.value = ambientNoise;
     }
 }

@@ -23,5 +23,8 @@ public class SensorDataAqmScores extends SensorData {
     private String aqmScores;
 
     public SensorDataAqmScores(String sensorId, LocalDateTime timestamp, String string) {
+        this.sensorId = sensorId;
+        this.timestamp = timestamp;
+        this.aqmScores = string;
     }
 }

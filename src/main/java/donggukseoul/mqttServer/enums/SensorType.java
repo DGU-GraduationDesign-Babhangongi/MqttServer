@@ -35,10 +35,10 @@ public enum SensorType {
 
     public static SensorType fromTopic(String topic) {
         for (SensorType type : values()) {
-            if (topic.contains(type.getTopic())) {
+            if (type != ALL && topic.contains(type.getTopic())) {
                 return type;
             }
         }
-        throw new IllegalArgumentException("Unknown topic: " + topic);
+        return null;
     }
 }

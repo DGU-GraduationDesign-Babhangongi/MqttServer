@@ -24,5 +24,8 @@ public class SensorDataPm2_5MassConcentration extends SensorData {
     private Double value;
 
     public SensorDataPm2_5MassConcentration(String sensorId, LocalDateTime timestamp, double pm25MassConcentration) {
+        this.sensorId = sensorId;
+        this.timestamp = timestamp;
+        this.value = pm25MassConcentration;
     }
 }

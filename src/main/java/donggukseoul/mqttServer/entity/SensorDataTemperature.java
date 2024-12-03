@@ -24,5 +24,8 @@ public class SensorDataTemperature extends SensorData {
     private Double value;
 
     public SensorDataTemperature(String sensorId, LocalDateTime timestamp, double celsius) {
+        this.sensorId = sensorId;
+        this.timestamp = timestamp;
+        this.value = celsius;
     }
 }
