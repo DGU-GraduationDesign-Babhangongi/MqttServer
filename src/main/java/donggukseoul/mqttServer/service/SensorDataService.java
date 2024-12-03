@@ -71,15 +71,15 @@ public class SensorDataService {
                 sensorDataPage = sensorDataTvocRepository.findAll(pageable);
                 response.put("sensorType", "TVOC");
                 break;
-            case AMBIENT_NOISE:
+            case AMBIENTNOISE:
                 sensorDataPage = sensorDataAmbientNoiseRepository.findAll(pageable);
                 response.put("sensorType", "AmbientNoise");
                 break;
-            case IAQ_INDEX:
+            case IAQINDEX:
                 sensorDataPage = sensorDataIaqIndexRepository.findAll(pageable);
                 response.put("sensorType", "IAQIndex");
                 break;
-            case AQM_SCORES:
+            case AQMSCORES:
                 sensorDataPage = sensorDataAqmScoresRepository.findAll(pageable);
                 response.put("sensorType", "AQMScores");
                 break;
@@ -87,19 +87,19 @@ public class SensorDataService {
                 sensorDataPage = sensorDataHumidityRepository.findAll(pageable);
                 response.put("sensorType", "Humidity");
                 break;
-            case USB_POWERED:
+            case USBPOWERED:
                 sensorDataPage = sensorDataUsbPoweredRepository.findAll(pageable);
                 response.put("sensorType", "UsbPowered");
                 break;
-            case BUTTON_PRESSED:
+            case BUTTONPRESSED:
                 sensorDataPage = sensorDataButtonPressedRepository.findAll(pageable);
                 response.put("sensorType", "ButtonPressed");
                 break;
-            case WATER_DETECTION:
+            case WATERDETECTION:
                 sensorDataPage = sensorDataWaterDetectionRepository.findAll(pageable);
                 response.put("sensorType", "WaterDetection");
                 break;
-            case PM2_5_MASS_CONCENTRATION:
+            case PM2_5MASSCONCENTRATION:
                 sensorDataPage = sensorDataPm2_5MassConcentrationRepository.findAll(pageable);
                 response.put("sensorType", "PM2_5MassConcentration");
                 break;
@@ -138,7 +138,7 @@ public class SensorDataService {
                     combinedData.addAll(sensorDataTvocRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
                     response.put("sensorType", "TVOC");
                     break;
-                case AMBIENT_NOISE:
+                case AMBIENTNOISE:
                     combinedData.addAll(sensorDataAmbientNoiseRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
                     response.put("sensorType", "AMBIENTNOISE");
                     break;
@@ -146,7 +146,7 @@ public class SensorDataService {
                     combinedData.addAll(sensorDataHumidityRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
                     response.put("sensorType", "HUMIDITY");
                     break;
-                case PM2_5_MASS_CONCENTRATION:
+                case PM2_5MASSCONCENTRATION:
                     combinedData.addAll(sensorDataPm2_5MassConcentrationRepository.findAllBySensorIdAndTimestampBetween(sensorId, startDate, endDate));
                     response.put("sensorType", "PM2_5MASSCONCENTRATION");
                     break;
@@ -205,15 +205,15 @@ public class SensorDataService {
                 sensorDataPage = sensorDataTvocRepository.findBySensorId(sensorId, pageable);
                 response.put("sensorType", "TVOC");
                 break;
-            case AMBIENT_NOISE:
+            case AMBIENTNOISE:
                 sensorDataPage = sensorDataAmbientNoiseRepository.findBySensorId(sensorId, pageable);
                 response.put("sensorType", "AmbientNoise");
                 break;
-            case IAQ_INDEX:
+            case IAQINDEX:
                 sensorDataPage = sensorDataIaqIndexRepository.findBySensorId(sensorId, pageable);
                 response.put("sensorType", "IAQIndex");
                 break;
-            case AQM_SCORES:
+            case AQMSCORES:
                 sensorDataPage = sensorDataAqmScoresRepository.findBySensorId(sensorId, pageable);
                 response.put("sensorType", "AQMScores");
                 break;
@@ -221,19 +221,19 @@ public class SensorDataService {
                 sensorDataPage = sensorDataHumidityRepository.findBySensorId(sensorId, pageable);
                 response.put("sensorType", "Humidity");
                 break;
-            case USB_POWERED:
+            case USBPOWERED:
                 sensorDataPage = sensorDataUsbPoweredRepository.findBySensorId(sensorId, pageable);
                 response.put("sensorType", "UsbPowered");
                 break;
-            case BUTTON_PRESSED:
+            case BUTTONPRESSED:
                 sensorDataPage = sensorDataButtonPressedRepository.findBySensorId(sensorId, pageable);
                 response.put("sensorType", "ButtonPressed");
                 break;
-            case WATER_DETECTION:
+            case WATERDETECTION:
                 sensorDataPage = sensorDataWaterDetectionRepository.findBySensorId(sensorId, pageable);
                 response.put("sensorType", "WaterDetection");
                 break;
-            case PM2_5_MASS_CONCENTRATION:
+            case PM2_5MASSCONCENTRATION:
                 sensorDataPage = sensorDataPm2_5MassConcentrationRepository.findBySensorId(sensorId, pageable);
                 response.put("sensorType", "PM2_5MassConcentration");
                 break;
@@ -283,19 +283,19 @@ public class SensorDataService {
                         response.put("TVOC", convertToDTO(recentTvoc));
                     }
                     break;
-                case AMBIENT_NOISE:
+                case AMBIENTNOISE:
                     SensorDataAmbientNoise recentAmbientNoise = sensorDataAmbientNoiseRepository.findFirstBySensorIdOrderByTimestampDesc(sensorId);
                     if (recentAmbientNoise != null) {
                         response.put("AmbientNoise", convertToDTO(recentAmbientNoise));
                     }
                     break;
-                case IAQ_INDEX:
+                case IAQINDEX:
                     SensorDataIaqIndex recentIaqIndex = sensorDataIaqIndexRepository.findFirstBySensorIdOrderByTimestampDesc(sensorId);
                     if (recentIaqIndex != null) {
                         response.put("IAQIndex", convertToDTO(recentIaqIndex));
                     }
                     break;
-                case AQM_SCORES:
+                case AQMSCORES:
                     SensorDataAqmScores recentAqmScores = sensorDataAqmScoresRepository.findFirstBySensorIdOrderByTimestampDesc(sensorId);
                     if (recentAqmScores != null) {
                         response.put("AQMScores", convertToDTO(recentAqmScores));
@@ -307,25 +307,25 @@ public class SensorDataService {
                         response.put("Humidity", convertToDTO(recentHumidity));
                     }
                     break;
-                case USB_POWERED:
+                case USBPOWERED:
                     SensorDataUsbPowered recentUsbPowered = sensorDataUsbPoweredRepository.findFirstBySensorIdOrderByTimestampDesc(sensorId);
                     if (recentUsbPowered != null) {
                         response.put("UsbPowered", convertToDTO(recentUsbPowered));
                     }
                     break;
-                case BUTTON_PRESSED:
+                case BUTTONPRESSED:
                     SensorDataButtonPressed recentButtonPressed = sensorDataButtonPressedRepository.findFirstBySensorIdOrderByTimestampDesc(sensorId);
                     if (recentButtonPressed != null) {
                         response.put("ButtonPressed", convertToDTO(recentButtonPressed));
                     }
                     break;
-                case WATER_DETECTION:
+                case WATERDETECTION:
                     SensorDataWaterDetection recentWaterDetection = sensorDataWaterDetectionRepository.findFirstBySensorIdOrderByTimestampDesc(sensorId);
                     if (recentWaterDetection != null) {
                         response.put("WaterDetection", convertToDTO(recentWaterDetection));
                     }
                     break;
-                case PM2_5_MASS_CONCENTRATION:
+                case PM2_5MASSCONCENTRATION:
                     SensorDataPm2_5MassConcentration recentPm2_5 = sensorDataPm2_5MassConcentrationRepository.findFirstBySensorIdOrderByTimestampDesc(sensorId);
                     if (recentPm2_5 != null) {
                         response.put("PM2_5MassConcentration", convertToDTO(recentPm2_5));

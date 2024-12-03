@@ -8,14 +8,14 @@ public enum SensorType {
     TEMPERATURE("temperature", SensorDataTemperatureRepository.class),
 
     TVOC("tvoc", SensorDataTvocRepository.class),
-    AMBIENT_NOISE("ambientNoise", SensorDataAmbientNoiseRepository.class),
-    IAQ_INDEX("iaqIndex", SensorDataIaqIndexRepository.class),
-    AQM_SCORES("aqmScores", SensorDataAqmScoresRepository.class),
+    AMBIENTNOISE("ambientNoise", SensorDataAmbientNoiseRepository.class),
+    IAQINDEX("iaqIndex", SensorDataIaqIndexRepository.class),
+    AQMSCORES("aqmScores", SensorDataAqmScoresRepository.class),
     HUMIDITY("humidity", SensorDataHumidityRepository.class),
-    USB_POWERED("usbPowered", SensorDataUsbPoweredRepository.class),
-    BUTTON_PRESSED("buttonPressed", SensorDataButtonPressedRepository.class),
-    WATER_DETECTION("waterDetection", SensorDataWaterDetectionRepository.class),
-    PM2_5_MASS_CONCENTRATION("PM2_5MassConcentration", SensorDataPm2_5MassConcentrationRepository.class);
+    USBPOWERED("usbPowered", SensorDataUsbPoweredRepository.class),
+    BUTTONPRESSED("buttonPressed", SensorDataButtonPressedRepository.class),
+    WATERDETECTION("waterDetection", SensorDataWaterDetectionRepository.class),
+    PM2_5MASSCONCENTRATION("PM2_5MassConcentration", SensorDataPm2_5MassConcentrationRepository.class);
 
     private final String topic;
     private final Class<? extends SensorDataRepository<?>> repositoryClass;

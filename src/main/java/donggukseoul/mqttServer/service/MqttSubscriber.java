@@ -96,21 +96,21 @@ public class MqttSubscriber {
                 return new SensorDataTemperature(sensorId, timestamp, jsonNode.get("celsius").asDouble());
             case TVOC:
                 return new SensorDataTvoc(sensorId, timestamp, jsonNode.get("tvoc").asDouble());
-            case AMBIENT_NOISE:
+            case AMBIENTNOISE:
                 return new SensorDataAmbientNoise(sensorId, timestamp, jsonNode.get("ambientNoise").asDouble());
-            case IAQ_INDEX:
+            case IAQINDEX:
                 return new SensorDataIaqIndex(sensorId, timestamp, jsonNode.get("iaqIndex").asDouble());
-            case AQM_SCORES:
+            case AQMSCORES:
                 return new SensorDataAqmScores(sensorId, timestamp, jsonNode.toString());
             case HUMIDITY:
                 return new SensorDataHumidity(sensorId, timestamp, jsonNode.get("humidity").asDouble());
-            case USB_POWERED:
+            case USBPOWERED:
                 return new SensorDataUsbPowered(sensorId, timestamp, jsonNode.get("usbPowered").asBoolean());
-            case BUTTON_PRESSED:
+            case BUTTONPRESSED:
                 return new SensorDataButtonPressed(sensorId, timestamp, jsonNode.get("buttonPressed").asBoolean());
-            case WATER_DETECTION:
+            case WATERDETECTION:
                 return new SensorDataWaterDetection(sensorId, timestamp, jsonNode.get("wet").asBoolean());
-            case PM2_5_MASS_CONCENTRATION:
+            case PM2_5MASSCONCENTRATION:
                 return new SensorDataPm2_5MassConcentration(sensorId, timestamp, jsonNode.get("PM2_5MassConcentration").asDouble());
             default:
                 throw new IllegalArgumentException("Unknown sensor type: " + sensorType);
