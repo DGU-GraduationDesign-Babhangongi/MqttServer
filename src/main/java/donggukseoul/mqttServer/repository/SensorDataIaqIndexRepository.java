@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SensorDataIaqIndexRepository extends JpaRepository<SensorDataIaqIndex, Long> {
+public interface SensorDataIaqIndexRepository extends SensorDataRepository<SensorDataIaqIndex> {
 
     Page<SensorDataIaqIndex> findBySensorId(String sensorId, Pageable pageable);
 

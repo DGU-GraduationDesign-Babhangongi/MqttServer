@@ -4,13 +4,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class SensorDataUsbPowered {
+@NoArgsConstructor
+public class SensorDataUsbPowered extends SensorData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,4 +21,6 @@ public class SensorDataUsbPowered {
     private LocalDateTime timestamp;
     private Boolean value;
 
+    public SensorDataUsbPowered(String sensorId, LocalDateTime timestamp, boolean usbPowered) {
+    }
 }

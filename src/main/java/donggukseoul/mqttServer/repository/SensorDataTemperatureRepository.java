@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface SensorDataTemperatureRepository extends JpaRepository<SensorDataTemperature, Long> {
+public interface SensorDataTemperatureRepository extends SensorDataRepository<SensorDataTemperature> {
 
     Page<SensorDataTemperature> findBySensorId(String sensorId, Pageable pageable);
 

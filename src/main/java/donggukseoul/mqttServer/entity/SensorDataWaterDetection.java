@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class SensorDataWaterDetection {
+@NoArgsConstructor
+public class SensorDataWaterDetection extends SensorData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,4 +23,6 @@ public class SensorDataWaterDetection {
     private LocalDateTime timestamp;
     private Boolean value;
 
+    public SensorDataWaterDetection(String sensorId, LocalDateTime timestamp, boolean wet) {
+    }
 }

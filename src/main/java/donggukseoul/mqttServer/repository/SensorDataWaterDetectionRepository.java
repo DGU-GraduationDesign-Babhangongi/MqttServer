@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SensorDataWaterDetectionRepository extends JpaRepository<SensorDataWaterDetection, Long> {
+public interface SensorDataWaterDetectionRepository extends SensorDataRepository<SensorDataWaterDetection> {
     Page<SensorDataWaterDetection> findBySensorId(String sensorId, Pageable pageable);
     SensorDataWaterDetection findFirstBySensorIdOrderByTimestampDesc(String sensorId);
 

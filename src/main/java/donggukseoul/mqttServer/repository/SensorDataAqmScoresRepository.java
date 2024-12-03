@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SensorDataAqmScoresRepository extends JpaRepository<SensorDataAqmScores, Long> {
+public interface SensorDataAqmScoresRepository extends SensorDataRepository<SensorDataAqmScores> {
 
     Page<SensorDataAqmScores> findBySensorId(String sensorId, Pageable pageable);
 

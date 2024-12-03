@@ -5,13 +5,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class SensorDataAqmScores {
+@NoArgsConstructor
+public class SensorDataAqmScores extends SensorData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,4 +22,6 @@ public class SensorDataAqmScores {
     private LocalDateTime timestamp;
     private String aqmScores;
 
+    public SensorDataAqmScores(String sensorId, LocalDateTime timestamp, String string) {
+    }
 }

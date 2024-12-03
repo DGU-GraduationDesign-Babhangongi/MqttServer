@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface SensorDataButtonPressedRepository extends JpaRepository<SensorDataButtonPressed, Long> {
+public interface SensorDataButtonPressedRepository extends SensorDataRepository<SensorDataButtonPressed> {
     Page<SensorDataButtonPressed> findBySensorId(String sensorId, Pageable pageable);
     SensorDataButtonPressed findFirstBySensorIdOrderByTimestampDesc(String sensorId);
 

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface SensorDataAmbientNoiseRepository extends JpaRepository<SensorDataAmbientNoise, Long> {
+public interface SensorDataAmbientNoiseRepository extends SensorDataRepository<SensorDataAmbientNoise> {
 
     Page<SensorDataAmbientNoise> findBySensorId(String sensorId, Pageable pageable);
 

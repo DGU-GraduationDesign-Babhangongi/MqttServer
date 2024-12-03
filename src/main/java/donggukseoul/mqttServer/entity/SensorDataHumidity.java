@@ -4,13 +4,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class SensorDataHumidity {
+@NoArgsConstructor
+public class SensorDataHumidity extends SensorData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,4 +21,6 @@ public class SensorDataHumidity {
     private LocalDateTime timestamp;
     private Double value;
 
+    public SensorDataHumidity(String sensorId, LocalDateTime timestamp, double humidity) {
+    }
 }

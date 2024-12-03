@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface SensorDataHumidityRepository extends JpaRepository<SensorDataHumidity, Long> {
+public interface SensorDataHumidityRepository extends SensorDataRepository<SensorDataHumidity> {
     Page<SensorDataHumidity> findBySensorId(String sensorId, Pageable pageable);
     SensorDataHumidity findFirstBySensorIdOrderByTimestampDesc(String sensorId);
 

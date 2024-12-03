@@ -3,6 +3,7 @@ package donggukseoul.mqttServer.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import donggukseoul.mqttServer.entity.*;
+import donggukseoul.mqttServer.enums.SensorType;
 import donggukseoul.mqttServer.repository.*;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -33,25 +35,7 @@ public class MqttSubscriber {
     private String clientId;
 
     @Autowired
-    private SensorDataTemperatureRepository sensorDataTemperatureRepository;
-    @Autowired
-    private SensorDataTvocRepository sensorDataTvocRepository;
-    @Autowired
-    private SensorDataAmbientNoiseRepository sensorDataAmbientNoiseRepository;
-    @Autowired
-    private SensorDataIaqIndexRepository sensorDataIaqIndexRepository;
-    @Autowired
-    private SensorDataAqmScoresRepository sensorDataAqmScoresRepository;
-    @Autowired
-    private SensorDataHumidityRepository sensorDataHumidityRepository;
-    @Autowired
-    private SensorDataUsbPoweredRepository sensorDataUsbPoweredRepository;
-    @Autowired
-    private SensorDataButtonPressedRepository sensorDataButtonPressedRepository;
-    @Autowired
-    private SensorDataWaterDetectionRepository sensorDataWaterDetectionRepository;
-    @Autowired
-    private SensorDataPm2_5MassConcentrationRepository sensorDataPm2_5MassConcentrationRepository;
+    private ApplicationContext applicationContext;
 
     @PostConstruct
     public void init() {
@@ -82,29 +66,12 @@ public class MqttSubscriber {
                 String sensorId = extractSensorIdFromTopic(topic);
                 LocalDateTime timestamp = parseTimestamp(jsonNode.get("ts").asText());
 
-                if (topic.contains("waterDetection")) {
-                    saveWaterDetectionData(sensorId, timestamp, jsonNode.get("wet").asBoolean());
-                } else if (topic.contains("temperature")) {
-                    saveTemperatureData(sensorId, timestamp, jsonNode.get("celsius").asDouble());
-                } else if (topic.contains("tvoc")) {
-                    saveTvocData(sensorId, timestamp, jsonNode.get("tvoc").asDouble());
-                } else if (topic.contains("ambientNoise")) {
-                    saveAmbientNoiseData(sensorId, timestamp, jsonNode.get("ambientNoise").asDouble());
-                } else if (topic.contains("iaqIndex")) {
-                    saveIaqIndexData(sensorId, timestamp, jsonNode.get("iaqIndex").asDouble());
-                } else if (topic.contains("aqmScores")) {
-                    saveAqmScoresData(sensorId, timestamp, jsonNode.toString());
-                } else if (topic.contains("humidity")) {
-                    saveHumidityData(sensorId, timestamp, jsonNode.get("humidity").asDouble());
-                } else if (topic.contains("usbPowered")) {
-                    saveUsbPoweredData(sensorId, timestamp, jsonNode.get("usbPowered").asBoolean());
-                } else if (topic.contains("buttonPressed")) {
-                    saveButtonPressedData(sensorId, timestamp, jsonNode.get("buttonPressed").asBoolean());
-                } else if (topic.contains("PM2_5MassConcentration")) {
-                    savePm2_5MassConcentrationData(sensorId, timestamp, jsonNode.get("PM2_5MassConcentration").asDouble());
-                } else {
-                    logger.warn("Unknown topic: {}", topic);
-                }
+                SensorType sensorType = SensorType.fromTopic(topic);
+                SensorDataRepository repository = (SensorDataRepository) applicationContext.getBean(sensorType.getRepositoryClass());
+
+                SensorData data = createSensorData(sensorType, sensorId, timestamp, jsonNode);
+                repository.save(data);
+                logger.info("{} data saved: {}", sensorType, data);
             }
         });
         logger.info("MQTT 구독 시작: {}", TOPIC_FILTER);
@@ -123,93 +90,30 @@ public class MqttSubscriber {
         return LocalDateTime.ofInstant(instant, ZoneId.of("Asia/Seoul"));
     }
 
-    private void saveWaterDetectionData(String sensorId, LocalDateTime timestamp, boolean value) {
-        SensorDataWaterDetection data = new SensorDataWaterDetection();
-        data.setSensorId(sensorId);
-        data.setTimestamp(timestamp);
-        data.setValue(value);
-        sensorDataWaterDetectionRepository.save(data);
-        logger.info("Water detection data saved: {}", data);
-    }
-
-    private void saveTemperatureData(String sensorId, LocalDateTime timestamp, double value) {
-        SensorDataTemperature data = new SensorDataTemperature();
-        data.setSensorId(sensorId);
-        data.setTimestamp(timestamp);
-        data.setValue(value);
-        sensorDataTemperatureRepository.save(data);
-        logger.info("Temperature data saved: {}", data);
-    }
-
-    private void saveTvocData(String sensorId, LocalDateTime timestamp, double value) {
-        SensorDataTvoc data = new SensorDataTvoc();
-        data.setSensorId(sensorId);
-        data.setTimestamp(timestamp);
-        data.setValue(value);
-        sensorDataTvocRepository.save(data);
-        logger.info("TVOC data saved: {}", data);
-    }
-
-    private void saveAmbientNoiseData(String sensorId, LocalDateTime timestamp, double value) {
-        SensorDataAmbientNoise data = new SensorDataAmbientNoise();
-        data.setSensorId(sensorId);
-        data.setTimestamp(timestamp);
-        data.setValue(value);
-        sensorDataAmbientNoiseRepository.save(data);
-        logger.info("Ambient noise data saved: {}", data);
-    }
-
-    private void saveIaqIndexData(String sensorId, LocalDateTime timestamp, double value) {
-        SensorDataIaqIndex data = new SensorDataIaqIndex();
-        data.setSensorId(sensorId);
-        data.setTimestamp(timestamp);
-        data.setValue(value);
-        sensorDataIaqIndexRepository.save(data);
-        logger.info("IAQ index data saved: {}", data);
-    }
-
-    private void saveAqmScoresData(String sensorId, LocalDateTime timestamp, String value) {
-        SensorDataAqmScores data = new SensorDataAqmScores();
-        data.setSensorId(sensorId);
-        data.setTimestamp(timestamp);
-        data.setAqmScores(value);
-        sensorDataAqmScoresRepository.save(data);
-        logger.info("AQM scores data saved: {}", data);
-    }
-
-    private void saveHumidityData(String sensorId, LocalDateTime timestamp, double value) {
-        SensorDataHumidity data = new SensorDataHumidity();
-        data.setSensorId(sensorId);
-        data.setTimestamp(timestamp);
-        data.setValue(value);
-        sensorDataHumidityRepository.save(data);
-        logger.info("Humidity data saved: {}", data);
-    }
-
-    private void saveUsbPoweredData(String sensorId, LocalDateTime timestamp, boolean value) {
-        SensorDataUsbPowered data = new SensorDataUsbPowered();
-        data.setSensorId(sensorId);
-        data.setTimestamp(timestamp);
-        data.setValue(value);
-        sensorDataUsbPoweredRepository.save(data);
-        logger.info("USB powered data saved: {}", data);
-    }
-
-    private void saveButtonPressedData(String sensorId, LocalDateTime timestamp, boolean value) {
-        SensorDataButtonPressed data = new SensorDataButtonPressed();
-        data.setSensorId(sensorId);
-        data.setTimestamp(timestamp);
-        data.setValue(value);
-        sensorDataButtonPressedRepository.save(data);
-        logger.info("Button pressed data saved: {}", data);
-    }
-
-    private void savePm2_5MassConcentrationData(String sensorId, LocalDateTime timestamp, double value) {
-        SensorDataPm2_5MassConcentration data = new SensorDataPm2_5MassConcentration();
-        data.setSensorId(sensorId);
-        data.setTimestamp(timestamp);
-        data.setValue(value);
-        sensorDataPm2_5MassConcentrationRepository.save(data);
-        logger.info("PM2_5 data saved: {}", data);
+    private SensorData createSensorData(SensorType sensorType, String sensorId, LocalDateTime timestamp, JsonNode jsonNode) {
+        switch (sensorType) {
+            case TEMPERATURE:
+                return new SensorDataTemperature(sensorId, timestamp, jsonNode.get("celsius").asDouble());
+            case TVOC:
+                return new SensorDataTvoc(sensorId, timestamp, jsonNode.get("tvoc").asDouble());
+            case AMBIENT_NOISE:
+                return new SensorDataAmbientNoise(sensorId, timestamp, jsonNode.get("ambientNoise").asDouble());
+            case IAQ_INDEX:
+                return new SensorDataIaqIndex(sensorId, timestamp, jsonNode.get("iaqIndex").asDouble());
+            case AQM_SCORES:
+                return new SensorDataAqmScores(sensorId, timestamp, jsonNode.toString());
+            case HUMIDITY:
+                return new SensorDataHumidity(sensorId, timestamp, jsonNode.get("humidity").asDouble());
+            case USB_POWERED:
+                return new SensorDataUsbPowered(sensorId, timestamp, jsonNode.get("usbPowered").asBoolean());
+            case BUTTON_PRESSED:
+                return new SensorDataButtonPressed(sensorId, timestamp, jsonNode.get("buttonPressed").asBoolean());
+            case WATER_DETECTION:
+                return new SensorDataWaterDetection(sensorId, timestamp, jsonNode.get("wet").asBoolean());
+            case PM2_5_MASS_CONCENTRATION:
+                return new SensorDataPm2_5MassConcentration(sensorId, timestamp, jsonNode.get("PM2_5MassConcentration").asDouble());
+            default:
+                throw new IllegalArgumentException("Unknown sensor type: " + sensorType);
+        }
     }
 }

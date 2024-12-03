@@ -5,6 +5,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class SensorDataPm2_5MassConcentration {
+@NoArgsConstructor
+public class SensorDataPm2_5MassConcentration extends SensorData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,4 +23,6 @@ public class SensorDataPm2_5MassConcentration {
     private LocalDateTime timestamp;
     private Double value;
 
+    public SensorDataPm2_5MassConcentration(String sensorId, LocalDateTime timestamp, double pm25MassConcentration) {
+    }
 }
