@@ -269,8 +269,8 @@ public class SensorDataService {
         // 각 SensorType을 반복
         for (SensorType sensorType : SensorType.values()) {
             switch (sensorType) {
-//                case ALL:
-//                    break;
+                case ALL:
+                    break;
                 case TEMPERATURE:
                     SensorDataTemperature recentTemperature = sensorDataTemperatureRepository.findFirstBySensorIdOrderByTimestampDesc(sensorId);
                     if (recentTemperature != null) {
