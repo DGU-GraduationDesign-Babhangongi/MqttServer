@@ -3,6 +3,8 @@ package donggukseoul.mqttServer.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import donggukseoul.mqttServer.dto.ClassroomStatusDTO;
+import donggukseoul.mqttServer.entity.FanStatusLog;
+import donggukseoul.mqttServer.repository.FanStatusLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -11,20 +13,25 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class ControlService {
 
     private final ObjectMapper objectMapper;
-    private List<ClassroomStatusDTO> classroomStatuses = new ArrayList<>();
+    private final FanStatusLogRepository fanStatusLogRepository;
+    private final Map<Integer, ClassroomStatusDTO> classroomStatuses = new HashMap<>();
 
     @PostConstruct
     public void initializeMqttClient() {
         try {
-            MqttClient client = new MqttClient("tcp://donggukseoul.com:1883", MqttClient.generateClientId(), new MemoryPersistence());
+            MqttClient client = new MqttClient("tcp://donggukseoul.com:1883", "control", new MemoryPersistence());
             client.connect();
             client.subscribe("sensor/data");
 
@@ -55,25 +62,37 @@ public class ControlService {
             JsonNode rootNode = objectMapper.readTree(payload);
             JsonNode dataArray = rootNode.path("data");
 
-            List<ClassroomStatusDTO> newStatuses = new ArrayList<>();
             for (JsonNode dataNode : dataArray) {
                 int classroom = dataNode.path("강의실").asInt();
                 String time = dataNode.path("시간").asText();
                 String fanStatus = dataNode.path("fan").asText();
 
-                // 이상 수치가 있는 경우 해당 항목들의 이름을 리스트로 저장
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                LocalDateTime utcDateTime = LocalDateTime.parse(time, formatter);
+                LocalDateTime kstDateTime = utcDateTime.plusHours(9); // UTC + 9시간
+
                 List<String> abnormalValues = new ArrayList<>();
                 JsonNode abnormalNode = dataNode.path("이상 수치");
                 if (abnormalNode.isObject()) {
                     abnormalNode.fieldNames().forEachRemaining(abnormalValues::add);
                 }
 
-                ClassroomStatusDTO statusDTO = new ClassroomStatusDTO(classroom, time, fanStatus, abnormalValues);
-                newStatuses.add(statusDTO);
-            }
+                ClassroomStatusDTO existingStatus = classroomStatuses.get(classroom);
 
-            // 업데이트된 상태 리스트로 교체
-            classroomStatuses = newStatuses;
+                if (existingStatus == null || !existingStatus.getFanStatus().equals(fanStatus)) {
+                    FanStatusLog fanStatusLog = FanStatusLog.builder()
+                            .classroom(classroom)
+                            .timestamp(kstDateTime.toString())
+                            .fanStatus(fanStatus)
+                            .build();
+
+                    fanStatusLogRepository.save(fanStatusLog);
+                    System.out.println("Saved fan status log for classroom " + classroom + ": " + fanStatusLog);
+                }
+
+                ClassroomStatusDTO statusDTO = new ClassroomStatusDTO(classroom, time, fanStatus, abnormalValues);
+                classroomStatuses.put(classroom, statusDTO);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,6 +100,6 @@ public class ControlService {
     }
 
     public List<ClassroomStatusDTO> getClassroomStatuses() {
-        return classroomStatuses;
+        return new ArrayList<>(classroomStatuses.values());
     }
 }
