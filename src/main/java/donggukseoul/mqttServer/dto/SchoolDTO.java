@@ -9,9 +9,4 @@ public class SchoolDTO {
     private Long id;
     private String name;
     private String logoUrl;
-
-    // RGB 색상
-    private int red;
-    private int green;
-    private int blue;
 }

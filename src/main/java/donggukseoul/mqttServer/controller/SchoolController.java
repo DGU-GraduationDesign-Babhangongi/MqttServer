@@ -33,9 +33,7 @@ public class SchoolController {
             @RequestParam("logo") MultipartFile logo,
             @RequestParam("address") String address,
             @RequestParam("adminEmail") String adminEmail,
-            @RequestParam("red") int red,
-            @RequestParam("green") int green,
-            @RequestParam("blue") int blue) throws IOException {
+            @RequestParam("themeColor") String themeColor) throws IOException {
 
         SchoolCreateDTO schoolCreateDTO = new SchoolCreateDTO();
         schoolCreateDTO.setName(name);
@@ -43,9 +41,7 @@ public class SchoolController {
         schoolCreateDTO.setLogo(logo);
         schoolCreateDTO.setAddress(address);
         schoolCreateDTO.setAdminEmail(adminEmail);
-        schoolCreateDTO.setRed(red);
-        schoolCreateDTO.setGreen(green);
-        schoolCreateDTO.setBlue(blue);
+        schoolCreateDTO.setThemeColor(themeColor);
 
         SchoolDTO schoolDTO = schoolService.createSchool(schoolCreateDTO);
         return ResponseEntity.ok(schoolDTO);

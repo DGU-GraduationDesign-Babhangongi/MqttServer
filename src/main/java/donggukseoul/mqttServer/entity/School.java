@@ -18,8 +18,5 @@ public class School {
     private String logoUrl;        // 학교 로고 이미지 URL
     private String address;        // 학교 주소
     private String adminEmail;     // 최초 관리자 이메일
-    // RGB 색상
-    private int red;
-    private int green;
-    private int blue;
+    private String themeColor;     // 학교 상징 색상 (예: #FFFFFF)
 }

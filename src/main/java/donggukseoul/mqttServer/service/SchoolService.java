@@ -46,9 +46,7 @@ public class SchoolService {
                 .logoUrl(logoUrl)
                 .address(schoolCreateDTO.getAddress())
                 .adminEmail(schoolCreateDTO.getAdminEmail())
-                .red(schoolCreateDTO.getRed())
-                .green(schoolCreateDTO.getGreen())
-                .blue(schoolCreateDTO.getBlue())
+                .themeColor(schoolCreateDTO.getThemeColor())
                 .build();
 
         schoolRepository.save(school);
@@ -83,9 +81,6 @@ public class SchoolService {
         dto.setId(school.getId());
         dto.setName(school.getName());
         dto.setLogoUrl(school.getLogoUrl());
-        dto.setRed(school.getRed());
-        dto.setGreen(school.getGreen());
-        dto.setBlue(school.getBlue());
         return dto;
     }
 }

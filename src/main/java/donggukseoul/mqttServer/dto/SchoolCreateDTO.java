@@ -12,9 +12,5 @@ public class SchoolCreateDTO {
     private MultipartFile logo;
     private String address;
     private String adminEmail;
-
-    // RGB 색상
-    private int red;
-    private int green;
-    private int blue;
+    private String themeColor;
 }
