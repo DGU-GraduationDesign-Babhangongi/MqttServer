@@ -25,8 +25,6 @@ public class MemoService {
     private final ClassroomRepository classroomRepository;
 
     public MemoDTO addMemo(String building, String name, String content, User user) {
-
-
         Classroom classroom = classroomRepository.findByBuildingAndName(building, name)
                 .orElseThrow(() -> new CustomException(ErrorCode.Invalid_CLASSROOM_NAME));
 
@@ -38,7 +36,7 @@ public class MemoService {
                 .build();
 
         Memo savedMemo = memoRepository.save(memo);
-        return convertToMemoDTO(savedMemo);
+        return convertToMemoDTO(savedMemo, user);
     }
 
     public void deleteMemo(Long memoId, User user) {
@@ -55,23 +53,24 @@ public class MemoService {
     public List<MemoDTO> getUserMemos(User user) {
         return memoRepository.findByUser(user)
                 .stream()
-                .map(this::convertToMemoDTO)
+                .map(memo -> convertToMemoDTO(memo, user))
                 .collect(Collectors.toList());
     }
 
-    public List<MemoDTO> getClassroomMemos(String building, String name) {
+    public List<MemoDTO> getClassroomMemos(String building, String name, User user) {
         Optional<Classroom> classroom = classroomRepository.findByBuildingAndName(building, name);
 
         if (classroom.isEmpty()) {
             throw new CustomException(ErrorCode.Invalid_CLASSROOM_NAME);
         }
+
         return memoRepository.findByClassroom(classroom.get())
                 .stream()
-                .map(this::convertToMemoDTO)
+                .map(memo -> convertToMemoDTO(memo, user))
                 .collect(Collectors.toList());
     }
 
-    private MemoDTO convertToMemoDTO(Memo memo) {
+    private MemoDTO convertToMemoDTO(Memo memo, User currentUser) {
         return MemoDTO.builder()
                 .id(memo.getId())
                 .content(memo.getContent())
@@ -81,7 +80,7 @@ public class MemoService {
                 .building(memo.getClassroom().getBuilding())
                 .floor(memo.getClassroom().getFloor())
                 .name(memo.getClassroom().getName())
+                .isAuthor(memo.getUser().equals(currentUser))
                 .build();
     }
-
 }

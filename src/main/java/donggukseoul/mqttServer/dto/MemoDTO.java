@@ -19,4 +19,6 @@ public class MemoDTO {
     private Integer floor;
     private String name;
 
+    // 추가된 필드: 작성자 여부
+    private boolean isAuthor;
 }

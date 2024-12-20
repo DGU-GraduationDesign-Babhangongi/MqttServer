@@ -43,8 +43,9 @@ public class MemoController {
     }
 
     @GetMapping("/classroom")
-    public ResponseEntity<List<MemoDTO>> getClassroomMemos(@RequestParam String building, @RequestParam String name) {
-        List<MemoDTO> memos = memoService.getClassroomMemos(building, name);
+    public ResponseEntity<List<MemoDTO>> getClassroomMemos(@RequestParam String building, @RequestParam String name, HttpServletRequest request) throws ServletException, IOException {
+        User user = joinService.getUserFromRequest(request);
+        List<MemoDTO> memos = memoService.getClassroomMemos(building, name, user);
         return ResponseEntity.ok(memos);
     }
 }
