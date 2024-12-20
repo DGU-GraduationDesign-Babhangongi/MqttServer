@@ -9,11 +9,16 @@ import donggukseoul.mqttServer.dto.*;
 import donggukseoul.mqttServer.entity.Building;
 import donggukseoul.mqttServer.entity.Classroom;
 import donggukseoul.mqttServer.entity.FloorPlan;
+import donggukseoul.mqttServer.entity.User;
 import donggukseoul.mqttServer.exception.CustomException;
 import donggukseoul.mqttServer.exception.ErrorCode;
+import donggukseoul.mqttServer.jwt.JWTUtil;
 import donggukseoul.mqttServer.repository.BuildingRepository;
 import donggukseoul.mqttServer.repository.ClassroomRepository;
 import donggukseoul.mqttServer.repository.FloorPlanRepository;
+import donggukseoul.mqttServer.repository.UserRepository;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,6 +39,9 @@ public class BuildingService {
     private final BuildingRepository buildingRepository;
     private final FloorPlanRepository floorPlanRepository;
     private final ClassroomRepository classroomRepository;
+    private final JWTUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final UserRepository userRepository;
 
 
     @Value("${spring.cloud.gcp.storage.credentials.location}")
@@ -70,6 +78,31 @@ public class BuildingService {
         building.setFloorPlans(savedFloorPlans);
         return convertToDetailDTOWithSensorCount(building);
     }
+    public List<BuildingDetailDTO> getAllBuildingsForUser(HttpServletRequest request) throws ServletException, IOException {
+        User user = getUserFromRequest(request); // 요청에서 사용자 정보 추출
+        String userSchool = user.getSchool(); // 사용자 학교 정보 가져오기
+
+        return buildingRepository.findBySchool(userSchool).stream()
+                .map(this::convertToDetailDTOWithSensorCount)
+                .collect(Collectors.toList());
+    }
+
+    // 요청에서 사용자 정보 추출
+    private User getUserFromRequest(HttpServletRequest request) throws ServletException, IOException {
+
+        String token = jwtUtil.validateToken(request, null, null, tokenBlacklistService);
+        if (token == null) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        // 토큰에서 username 획득
+        String username = jwtUtil.getUsername(token);
+
+        return userRepository.findOptionalByUsername(username)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+
 
     public String getFloorPlanByBuildingAndFloor(String buildingName, int floor) {
         Building building = buildingRepository.findByName(buildingName)

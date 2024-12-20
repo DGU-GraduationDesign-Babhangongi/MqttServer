@@ -29,6 +29,8 @@ public class User {
 
     private String role;
 
+    private String school;
+
     @ManyToMany(mappedBy = "favoritedByUsers")
     private Set<Classroom> favoriteClassrooms = new HashSet<>();
 }

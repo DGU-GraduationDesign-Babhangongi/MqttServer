@@ -5,6 +5,8 @@ import donggukseoul.mqttServer.dto.BuildingDTO;
 import donggukseoul.mqttServer.dto.BuildingDetailDTO;
 import donggukseoul.mqttServer.dto.ClassroomDTO;
 import donggukseoul.mqttServer.service.BuildingService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +22,12 @@ public class BuildingController {
 
     private final BuildingService buildingService;
 
-    @GetMapping()
-    public ResponseEntity<List<BuildingDetailDTO>> getAllBuildingNames() {
-        List<BuildingDetailDTO> buildings = buildingService.getAllBuildings();
+    @GetMapping
+    public ResponseEntity<List<BuildingDetailDTO>> getAllBuildingNames(HttpServletRequest request) throws ServletException, IOException {
+        List<BuildingDetailDTO> buildings = buildingService.getAllBuildingsForUser(request);
         return ResponseEntity.ok(buildings);
     }
+
 
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<BuildingDetailDTO> createBuilding(
