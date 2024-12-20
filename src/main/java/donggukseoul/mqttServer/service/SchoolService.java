@@ -81,6 +81,7 @@ public class SchoolService {
         dto.setId(school.getId());
         dto.setName(school.getName());
         dto.setLogoUrl(school.getLogoUrl());
+        dto.setThemeColor(school.getThemeColor());
         return dto;
     }
 }
