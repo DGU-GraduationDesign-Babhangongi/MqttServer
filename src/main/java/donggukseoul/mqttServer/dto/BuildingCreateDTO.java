@@ -1,8 +1,10 @@
 package donggukseoul.mqttServer.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class BuildingCreateDTO {
     private String name;
     private int maxFloor;

@@ -138,6 +138,8 @@ public class ClassroomService {
                 .building(classroomCreateDto.getBuilding())
                 .sensorId(classroomCreateDto.getSensorId())
                 .sensorType(classroomCreateDto.getSensorType())
+                .sensorX(classroomCreateDto.getSensorX())
+                .sensorY(classroomCreateDto.getSensorY())
                 .build();
         classroomRepository.save(classroom);
 
@@ -235,6 +237,9 @@ public class ClassroomService {
                 .building(classroom.getBuilding())
                 .sensorId(classroom.getSensorId())
                 .sensorType(classroom.getSensorType())
+                .sensorX(classroom.getSensorX())
+                .sensorY(classroom.getSensorY())
                 .build();
     }
+
 }

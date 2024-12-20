@@ -5,11 +5,9 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import donggukseoul.mqttServer.dto.BuildingCreateDTO;
-import donggukseoul.mqttServer.dto.BuildingDTO;
-import donggukseoul.mqttServer.dto.BuildingDetailDTO;
-import donggukseoul.mqttServer.dto.FloorPlanDTO;
+import donggukseoul.mqttServer.dto.*;
 import donggukseoul.mqttServer.entity.Building;
+import donggukseoul.mqttServer.entity.Classroom;
 import donggukseoul.mqttServer.entity.FloorPlan;
 import donggukseoul.mqttServer.repository.BuildingRepository;
 import donggukseoul.mqttServer.repository.ClassroomRepository;
@@ -40,10 +38,13 @@ public class BuildingService {
     @Value("${spring.cloud.gcp.storage.bucket}")
     private String bucketName;
 
-    public BuildingDTO createBuilding(BuildingCreateDTO buildingCreateDto, List<MultipartFile> floorPlans) throws IOException {
+    public BuildingDetailDTO createBuilding(BuildingCreateDTO buildingCreateDto, MultipartFile buildingImage, List<MultipartFile> floorPlans) throws IOException {
+        String buildingImageUrl = uploadFileToGCS(buildingImage, "buildings/" + buildingCreateDto.getName() + "/building.jpg");
+
         Building building = Building.builder()
                 .name(buildingCreateDto.getName())
                 .maxFloor(buildingCreateDto.getMaxFloor())
+                .imageUrl(buildingImageUrl) // 건물 이미지 URL 설정
                 .build();
         buildingRepository.save(building);
 
@@ -63,8 +64,17 @@ public class BuildingService {
         floorPlanRepository.saveAll(savedFloorPlans);
 
         building.setFloorPlans(savedFloorPlans);
-        return convertToDTO(building);
+        return convertToDetailDTOWithSensorCount(building);
     }
+
+    // 건물명과 층수로 강의실 리스트 반환 (센서 좌표 포함)
+    public List<ClassroomDTO> getClassroomsByBuildingAndFloor(String buildingName, int floor) {
+        return classroomRepository.findByBuildingAndFloor(buildingName, floor)
+                .stream()
+                .map(this::convertToClassroomDTO)
+                .collect(Collectors.toList());
+    }
+
 
     public List<BuildingDetailDTO> getAllBuildings() {
         return buildingRepository.findAll().stream()
@@ -119,6 +129,7 @@ public class BuildingService {
         buildingDetailDTO.setId(building.getId());
         buildingDetailDTO.setName(building.getName());
         buildingDetailDTO.setMaxFloor(building.getMaxFloor());
+        buildingDetailDTO.setImageUrl(building.getImageUrl()); // 건물 이미지 링크 설정
 
         // 층별 이미지 URL 리스트 생성
         List<String> floorPlanImages = building.getFloorPlans().stream()
@@ -131,6 +142,19 @@ public class BuildingService {
         buildingDetailDTO.setSensorCount(sensorCount);
 
         return buildingDetailDTO;
+    }
+
+    private ClassroomDTO convertToClassroomDTO(Classroom classroom) {
+        return ClassroomDTO.builder()
+                .id(classroom.getId())
+                .name(classroom.getName())
+                .floor(classroom.getFloor())
+                .building(classroom.getBuilding())
+                .sensorId(classroom.getSensorId())
+                .sensorType(classroom.getSensorType())
+                .sensorX(classroom.getSensorX())
+                .sensorY(classroom.getSensorY())
+                .build();
     }
 
 }

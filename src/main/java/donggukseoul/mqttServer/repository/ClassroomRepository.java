@@ -20,4 +20,6 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
     int countByBuilding(String building);
 
+    List<Classroom> findByBuildingAndFloor(String building, int floor);
+
 }
