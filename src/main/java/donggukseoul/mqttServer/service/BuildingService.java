@@ -7,10 +7,12 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import donggukseoul.mqttServer.dto.BuildingCreateDTO;
 import donggukseoul.mqttServer.dto.BuildingDTO;
+import donggukseoul.mqttServer.dto.BuildingDetailDTO;
 import donggukseoul.mqttServer.dto.FloorPlanDTO;
 import donggukseoul.mqttServer.entity.Building;
 import donggukseoul.mqttServer.entity.FloorPlan;
 import donggukseoul.mqttServer.repository.BuildingRepository;
+import donggukseoul.mqttServer.repository.ClassroomRepository;
 import donggukseoul.mqttServer.repository.FloorPlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +32,7 @@ public class BuildingService {
 
     private final BuildingRepository buildingRepository;
     private final FloorPlanRepository floorPlanRepository;
+    private final ClassroomRepository classroomRepository;
 
     @Value("${spring.cloud.gcp.storage.credentials.location}")
     private String keyFileName;
@@ -63,9 +66,9 @@ public class BuildingService {
         return convertToDTO(building);
     }
 
-    public List<String> getAllBuildingNames() {
+    public List<BuildingDetailDTO> getAllBuildings() {
         return buildingRepository.findAll().stream()
-                .map(Building::getName)
+                .map(this::convertToDetailDTOWithSensorCount)
                 .collect(Collectors.toList());
     }
 
@@ -110,4 +113,24 @@ public class BuildingService {
         floorPlanDTO.setImageUrl(floorPlan.getImageUrl());
         return floorPlanDTO;
     }
+
+    private BuildingDetailDTO convertToDetailDTOWithSensorCount(Building building) {
+        BuildingDetailDTO buildingDetailDTO = new BuildingDetailDTO();
+        buildingDetailDTO.setId(building.getId());
+        buildingDetailDTO.setName(building.getName());
+        buildingDetailDTO.setMaxFloor(building.getMaxFloor());
+
+        // 층별 이미지 URL 리스트 생성
+        List<String> floorPlanImages = building.getFloorPlans().stream()
+                .map(floorPlan -> floorPlan.getImageUrl())
+                .collect(Collectors.toList());
+        buildingDetailDTO.setFloorPlanImages(floorPlanImages);
+
+        // 해당 빌딩에 등록된 센서 개수 계산
+        int sensorCount = classroomRepository.countByBuilding(building.getName());
+        buildingDetailDTO.setSensorCount(sensorCount);
+
+        return buildingDetailDTO;
+    }
+
 }

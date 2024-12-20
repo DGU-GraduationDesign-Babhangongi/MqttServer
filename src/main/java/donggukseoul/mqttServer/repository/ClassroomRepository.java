@@ -18,5 +18,6 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
     List<Classroom> findByBuilding(String building);
 
+    int countByBuilding(String building);
 
 }

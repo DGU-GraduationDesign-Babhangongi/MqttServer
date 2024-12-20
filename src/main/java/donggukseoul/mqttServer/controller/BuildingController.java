@@ -2,6 +2,7 @@ package donggukseoul.mqttServer.controller;
 
 import donggukseoul.mqttServer.dto.BuildingCreateDTO;
 import donggukseoul.mqttServer.dto.BuildingDTO;
+import donggukseoul.mqttServer.dto.BuildingDetailDTO;
 import donggukseoul.mqttServer.service.BuildingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +20,9 @@ public class BuildingController {
     private final BuildingService buildingService;
 
     @GetMapping()
-    public ResponseEntity<List<String>> getAllBuildingNames() {
-        List<String> buildingNames = buildingService.getAllBuildingNames();
-        return ResponseEntity.ok(buildingNames);
+    public ResponseEntity<List<BuildingDetailDTO>> getAllBuildingNames() {
+        List<BuildingDetailDTO> buildings = buildingService.getAllBuildings();
+        return ResponseEntity.ok(buildings);
     }
 
     @PostMapping(consumes = {"multipart/form-data"})
