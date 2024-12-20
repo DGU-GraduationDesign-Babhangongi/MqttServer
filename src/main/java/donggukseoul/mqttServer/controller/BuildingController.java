@@ -52,11 +52,11 @@ public class BuildingController {
 
     // 건물명과 층수를 입력받아 해당 층에 등록된 강의실 리스트 반환(센서 id, 타입, 위치)
     @GetMapping("/{buildingName}/floors/{floor}/classrooms")
-    public ResponseEntity<List<ClassroomDTO>> getClassroomsByBuildingAndFloor(
+    public List<ClassroomDTO> getClassroomsByBuildingAndFloor(
             @PathVariable String buildingName,
             @PathVariable int floor) {
         List<ClassroomDTO> classrooms = buildingService.getClassroomsByBuildingAndFloor(buildingName, floor);
-        return ResponseEntity.ok(classrooms);
+        return classrooms;
     }
 
 }
