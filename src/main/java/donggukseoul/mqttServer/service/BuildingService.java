@@ -9,6 +9,8 @@ import donggukseoul.mqttServer.dto.*;
 import donggukseoul.mqttServer.entity.Building;
 import donggukseoul.mqttServer.entity.Classroom;
 import donggukseoul.mqttServer.entity.FloorPlan;
+import donggukseoul.mqttServer.exception.CustomException;
+import donggukseoul.mqttServer.exception.ErrorCode;
 import donggukseoul.mqttServer.repository.BuildingRepository;
 import donggukseoul.mqttServer.repository.ClassroomRepository;
 import donggukseoul.mqttServer.repository.FloorPlanRepository;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.multipart.MultipartFile;
+import donggukseoul.mqttServer.exception.ErrorCode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +34,7 @@ public class BuildingService {
     private final BuildingRepository buildingRepository;
     private final FloorPlanRepository floorPlanRepository;
     private final ClassroomRepository classroomRepository;
+
 
     @Value("${spring.cloud.gcp.storage.credentials.location}")
     private String keyFileName;
@@ -66,6 +70,17 @@ public class BuildingService {
         building.setFloorPlans(savedFloorPlans);
         return convertToDetailDTOWithSensorCount(building);
     }
+
+    public String getFloorPlanByBuildingAndFloor(String buildingName, int floor) {
+        Building building = buildingRepository.findByName(buildingName)
+                .orElseThrow(() -> new CustomException(ErrorCode.BUILDING_NOT_FOUND));
+
+        FloorPlan floorPlan = floorPlanRepository.findByBuilding_IdAndFloor(building.getId(), floor)
+                .orElseThrow(() -> new CustomException(ErrorCode.FLOOR_PLAN_NOT_FOUND));
+
+        return floorPlan.getImageUrl();
+    }
+
 
     // 건물명과 층수로 강의실 리스트 반환 (센서 좌표 포함)
     public List<ClassroomDTO> getClassroomsByBuildingAndFloor(String buildingName, int floor) {

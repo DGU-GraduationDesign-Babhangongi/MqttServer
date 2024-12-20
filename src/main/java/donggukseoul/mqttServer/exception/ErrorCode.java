@@ -31,6 +31,9 @@ public enum ErrorCode {
 
     INVALID_DEVICE_ID(HttpStatus.BAD_REQUEST, "DEVICE-001", "Invalid device ID"),
 
+    BUILDING_NOT_FOUND(HttpStatus.NOT_FOUND, "BUILDING-001", "Building not found"),
+    FLOOR_PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "FLOOR_PLAN-001", "Floor plan not found"),
+
     INVALID_SENSOR_TYPE(HttpStatus.BAD_REQUEST, "SENSOR-001", "Invalid sensor type"),
     SENSOR_NOT_FOUND(HttpStatus.NOT_FOUND, "SENSOR-002", "Sensor not found"),;
 
