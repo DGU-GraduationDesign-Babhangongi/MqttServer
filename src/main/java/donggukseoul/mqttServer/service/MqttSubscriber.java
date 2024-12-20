@@ -2,27 +2,31 @@ package donggukseoul.mqttServer.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import donggukseoul.mqttServer.entity.*;
-import donggukseoul.mqttServer.enums.SensorType;
-import donggukseoul.mqttServer.repository.*;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import donggukseoul.mqttServer.entity.SensorData;
+import donggukseoul.mqttServer.repository.ClassroomRepository;
+import donggukseoul.mqttServer.repository.SensorDataRepository;
+import donggukseoul.mqttServer.repository.SensorTypeRepository;
+import lombok.RequiredArgsConstructor;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
+import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class MqttSubscriber {
 
     private static final Logger logger = LoggerFactory.getLogger(MqttSubscriber.class);
@@ -34,8 +38,10 @@ public class MqttSubscriber {
     @Value("${mqtt.clientId}")
     private String clientId;
 
-    @Autowired
-    private ApplicationContext applicationContext;
+    private final SensorTypeRepository sensorTypeRepository;
+    private final SensorDataRepository sensorDataRepository;
+    private final ClassroomRepository classroomRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostConstruct
     public void init() {
@@ -45,85 +51,100 @@ public class MqttSubscriber {
             options.setCleanSession(true);
 
             mqttClient.connect(options);
-            logger.info("MQTT 브로커에 연결 성공: {}", BROKER_URL);
+            logger.info("MQTT broker connected: {}", BROKER_URL);
 
             subscribe();
         } catch (MqttException e) {
-            logger.error("MQTT 연결 실패: {}", e.getMessage(), e);
+            logger.error("MQTT connection failed: {}", e.getMessage(), e);
         }
     }
 
     public void subscribe() throws MqttException {
         mqttClient.subscribe(TOPIC_FILTER, new IMqttMessageListener() {
             @Override
-            public void messageArrived(String topic, org.eclipse.paho.client.mqttv3.MqttMessage message) throws Exception {
+            public void messageArrived(String topic, MqttMessage message) throws Exception {
                 try {
                     String payload = new String(message.getPayload());
-                    logger.info("메시지 도착 - 토픽: {}, 페이로드: {}", topic, payload);
-                    SensorType sensorType = SensorType.fromTopic(topic);
-                    if (sensorType == null) {
-                        logger.debug("유효하지 않은 센서 타입의 토픽 무시: {}", topic);
+                    logger.info("Message received - Topic: {}, Payload: {}", topic, payload);
+
+                    String sensorId = extractSensorIdFromTopic(topic);
+                    if (!classroomRepository.existsBySensorId(sensorId)) {
+                        logger.debug("Unrecognized sensor ID, ignoring message: {}", sensorId);
                         return;
                     }
 
-                    ObjectMapper mapper = new ObjectMapper();
-                    JsonNode jsonNode = mapper.readTree(payload);
+                    String sensorType = extractSensorTypeFromTopic(topic);
+                    if (!sensorTypeRepository.existsByTypeName(sensorType)) {
+                        logger.debug("Unrecognized sensor type, ignoring message: {}", sensorType);
+                        return;
+                    }
 
-                    String sensorId = extractSensorIdFromTopic(topic);
-                    LocalDateTime timestamp = parseTimestamp(jsonNode.get("ts").asText());
 
-                    SensorDataRepository repository = (SensorDataRepository) applicationContext.getBean(sensorType.getRepositoryClass());
+                    LocalDateTime timestamp = parseTimestamp(payload);
+                    JsonNode jsonNode = objectMapper.readTree(payload);
 
-                    SensorData data = createSensorData(sensorType, sensorId, timestamp, jsonNode);
-                    repository.save(data);
+                    SensorData data = createSensorData(sensorId, sensorType, timestamp, jsonNode);
+                    sensorDataRepository.save(data);
 
-                    logger.info("{} data saved: {}", sensorType, data);
+                    logger.info("Data saved for sensor type {}: {}", sensorType, data);
                 } catch (Exception e) {
-                    logger.error("메시지 처리 중 오류 발생: {}", e.getMessage(), e);
+                    logger.error("Error processing message: {}", e.getMessage(), e);
                 }
             }
         });
-        logger.info("MQTT 구독 시작: {}", TOPIC_FILTER);
+        logger.info("MQTT subscription started for topic filter: {}", TOPIC_FILTER);
     }
 
+    private String extractSensorTypeFromTopic(String topic) {
+        String[] parts = topic.split("/");
+        return parts[6]; // 센서 타입이 6번째 위치에 있음
+    }
 
     private String extractSensorIdFromTopic(String topic) {
         String[] parts = topic.split("/");
-        String sensorId = parts[5];
-        logger.info("센서 ID 추출: {}", sensorId);
-        return sensorId;
+        return parts[5]; // 센서 ID가 5번째 위치에 있음
     }
 
-    private LocalDateTime parseTimestamp(String timestampStr) {
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of("Asia/Seoul"));
-        Instant instant = Instant.from(formatter.parse(timestampStr));
+    private LocalDateTime parseTimestamp(String payload) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(payload);
+        String timestampStr = rootNode.get("ts").asText();
+        Instant instant = Instant.parse(timestampStr);
         return LocalDateTime.ofInstant(instant, ZoneId.of("Asia/Seoul"));
     }
 
-    private SensorData createSensorData(SensorType sensorType, String sensorId, LocalDateTime timestamp, JsonNode jsonNode) {
-        switch (sensorType) {
-            case TEMPERATURE:
-                return new SensorDataTemperature(sensorId, timestamp, jsonNode.get("celsius").asDouble());
-            case TVOC:
-                return new SensorDataTvoc(sensorId, timestamp, jsonNode.get("tvoc").asDouble());
-            case AMBIENTNOISE:
-                return new SensorDataAmbientNoise(sensorId, timestamp, jsonNode.get("ambientNoise").asDouble());
-            case IAQINDEX:
-                return new SensorDataIaqIndex(sensorId, timestamp, jsonNode.get("iaqIndex").asDouble());
-            case AQMSCORES:
-                return new SensorDataAqmScores(sensorId, timestamp, jsonNode.toString());
-            case HUMIDITY:
-                return new SensorDataHumidity(sensorId, timestamp, jsonNode.get("humidity").asDouble());
-            case USBPOWERED:
-                return new SensorDataUsbPowered(sensorId, timestamp, jsonNode.get("usbPowered").asBoolean());
-            case BUTTONPRESSED:
-                return new SensorDataButtonPressed(sensorId, timestamp, jsonNode.get("buttonPressed").asBoolean());
-            case WATERDETECTION:
-                return new SensorDataWaterDetection(sensorId, timestamp, jsonNode.get("wet").asBoolean());
-            case PM2_5MASSCONCENTRATION:
-                return new SensorDataPm2_5MassConcentration(sensorId, timestamp, jsonNode.get("PM2_5MassConcentration").asDouble());
-            default:
-                throw new IllegalArgumentException("Unknown sensor type: " + sensorType);
+    private SensorData createSensorData(String sensorId, String sensorType, LocalDateTime timestamp, JsonNode jsonNode) {
+        SensorData sensorData = new SensorData();
+        sensorData.setSensorId(sensorId);
+        sensorData.setSensorType(sensorType);
+        sensorData.setTimestamp(timestamp);
+
+        ObjectNode extraData = objectMapper.createObjectNode();
+
+        // "ts" 필드는 제외하고 처리
+        Iterator<Map.Entry<String, JsonNode>> fields = jsonNode.fields();
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> field = fields.next();
+            String key = field.getKey();
+            JsonNode valueNode = field.getValue();
+
+            if (!key.equals("ts")) {
+                if (valueNode.isNumber()) {
+                    // 숫자형 값은 value에 저장
+                    sensorData.setValue(valueNode.asDouble());
+                } else if (valueNode.isBoolean()) {
+                    // 불리언 값은 1.0 또는 0.0으로 value에 저장
+                    sensorData.setValue(valueNode.asBoolean() ? 1.0 : 0.0);
+                } else {
+                    // 그 외 값은 extraData에 추가
+                    extraData.set(key, valueNode);
+                }
+            }
         }
+
+        if (!extraData.isEmpty()) {
+            sensorData.setValueString(extraData.toString());
+        }
+
+        return sensorData;
     }
 }

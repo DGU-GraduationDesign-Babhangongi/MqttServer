@@ -4,6 +4,8 @@ import donggukseoul.mqttServer.dto.SensorDataDTO;
 import donggukseoul.mqttServer.enums.SensorType;
 import donggukseoul.mqttServer.enums.SortBy;
 import donggukseoul.mqttServer.enums.SortOrder;
+import donggukseoul.mqttServer.exception.CustomException;
+import donggukseoul.mqttServer.exception.ErrorCode;
 import donggukseoul.mqttServer.service.SensorDataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/sensorData")
@@ -22,32 +26,40 @@ public class SensorDataController {
 
     @GetMapping
     public Map<String, Object> getSensorData(
-            @RequestParam SensorType sensorType,
+            @RequestParam String sensorType,
             @RequestParam(defaultValue = "TIMESTAMP") SortBy sortBy,
             @RequestParam(defaultValue = "ASC") SortOrder order,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Map<String, Object> response = sensorDataService.getSensorData(sensorType,sortBy,order,page,size);
-        return response;
+        SensorType type = SensorType.fromTypeName(sensorType);
+        if (type == null) {
+            throw new CustomException(ErrorCode.INVALID_SENSOR_TYPE);
+        }
+
+        return sensorDataService.getSensorData(type, sortBy, order, page, size);
     }
 
     @GetMapping("/{sensorId}")
     public Map<String, Object> getSensorDataBySensorId(
-            @RequestParam SensorType sensorType,
+            @RequestParam String sensorType,
             @PathVariable String sensorId,
             @RequestParam(defaultValue = "TIMESTAMP") SortBy sortBy,
             @RequestParam(defaultValue = "ASC") SortOrder order,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Map<String, Object> response = sensorDataService.getSensorDataBySensorId(sensorType,sensorId,sortBy,order,page,size);
-        return response;
+        SensorType type = SensorType.fromTypeName(sensorType);
+        if (type == null) {
+            throw new CustomException(ErrorCode.INVALID_SENSOR_TYPE);
+        }
+
+        return sensorDataService.getSensorDataBySensorId(type, sensorId, sortBy, order, page, size);
     }
 
     @GetMapping("/classroom")
     public Map<String, Object> getSensorDataByBuildingAndName(
-            @RequestParam SensorType sensorType,
+            @RequestParam String sensorType,
             @RequestParam String building,
             @RequestParam String name,
             @RequestParam(defaultValue = "TIMESTAMP") SortBy sortBy,
@@ -55,13 +67,17 @@ public class SensorDataController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Map<String, Object> response = sensorDataService.getSensorDataByBuildingAndName(sensorType,building,name,sortBy,order,page,size);
-        return response;
+        SensorType type = SensorType.fromTypeName(sensorType);
+        if (type == null) {
+            throw new CustomException(ErrorCode.INVALID_SENSOR_TYPE);
+        }
+
+        return sensorDataService.getSensorDataByBuildingAndName(type, building, name, sortBy, order, page, size);
     }
 
     @GetMapping("/classroom/betweenDates")
     public Map<String, Object> getSensorDataBetweenDates(
-            @RequestParam List<SensorType> sensorTypes,
+            @RequestParam List<String> sensorTypes,
             @RequestParam String building,
             @RequestParam String name,
             @RequestParam LocalDateTime startDate,
@@ -70,17 +86,21 @@ public class SensorDataController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
+        List<SensorType> types = sensorTypes.stream()
+                .map(SensorType::fromTypeName)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-        Map<String, Object> sensorData = sensorDataService.getCombinedSensorData(sensorTypes, building, name, startDate, endDate, order, page, size);
+        if (types.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_SENSOR_TYPE);
+        }
 
-        return sensorData;
-
+        return sensorDataService.getCombinedSensorData(types, building, name, startDate, endDate, order, page, size);
     }
 
     @GetMapping("/recent/{sensorId}")
     public Map<String, Object> getRecentSensorData(@PathVariable String sensorId) {
-        Map<String, Object> response = sensorDataService.getRecentSensorData(sensorId);
-        return response;
+        return sensorDataService.getRecentSensorData(sensorId);
     }
 
     @GetMapping("/recent/classroom")
@@ -88,10 +108,7 @@ public class SensorDataController {
             @RequestParam String building,
             @RequestParam String name
     ) {
-
-        Map<String, Object> response = sensorDataService.getRecentSensorDataByBuildingAndName(building, name);
-
-        return response;
+        return sensorDataService.getRecentSensorDataByBuildingAndName(building, name);
     }
 
     @GetMapping("/abnormalValues")
@@ -99,5 +116,4 @@ public class SensorDataController {
         List<SensorDataDTO> anomalies = sensorDataService.getAbnormalValuesOverTheLastHour();
         return ResponseEntity.ok(anomalies);
     }
-
 }

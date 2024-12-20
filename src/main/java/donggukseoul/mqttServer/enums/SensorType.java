@@ -1,41 +1,31 @@
 package donggukseoul.mqttServer.enums;
 
-import donggukseoul.mqttServer.repository.*;
-
 public enum SensorType {
-    ALL("all", null),
+    ALL("all"),
+    TEMPERATURE("temperature"),
+    TVOC("tvoc"),
+    AMBIENTNOISE("ambientNoise"),
+    IAQINDEX("iaqIndex"),
+    AQMSCORES("aqmScores"),
+    HUMIDITY("humidity"),
+    USBPOWERED("usbPowered"),
+    BUTTONPRESSED("buttonPressed"),
+    WATERDETECTION("waterDetection"),
+    PM2_5MASSCONCENTRATION("PM2_5MassConcentration");
 
-    TEMPERATURE("temperature", SensorDataTemperatureRepository.class),
+    private final String typeName;
 
-    TVOC("tvoc", SensorDataTvocRepository.class),
-    AMBIENTNOISE("ambientNoise", SensorDataAmbientNoiseRepository.class),
-    IAQINDEX("iaqIndex", SensorDataIaqIndexRepository.class),
-    AQMSCORES("aqmScores", SensorDataAqmScoresRepository.class),
-    HUMIDITY("humidity", SensorDataHumidityRepository.class),
-    USBPOWERED("usbPowered", SensorDataUsbPoweredRepository.class),
-    BUTTONPRESSED("buttonPressed", SensorDataButtonPressedRepository.class),
-    WATERDETECTION("waterDetection", SensorDataWaterDetectionRepository.class),
-    PM2_5MASSCONCENTRATION("PM2_5MassConcentration", SensorDataPm2_5MassConcentrationRepository.class);
-
-    private final String topic;
-    private final Class<? extends SensorDataRepository<?>> repositoryClass;
-
-    SensorType(String topic, Class<? extends SensorDataRepository<?>> repositoryClass) {
-        this.topic = topic;
-        this.repositoryClass = repositoryClass;
+    SensorType(String typeName) {
+        this.typeName = typeName;
     }
 
-    public String getTopic() {
-        return topic;
+    public String getTypeName() {
+        return typeName;
     }
 
-    public Class<? extends SensorDataRepository<?>> getRepositoryClass() {
-        return repositoryClass;
-    }
-
-    public static SensorType fromTopic(String topic) {
+    public static SensorType fromTypeName(String typeName) {
         for (SensorType type : values()) {
-            if (type != ALL && topic.contains(type.getTopic())) {
+            if (type.getTypeName().equalsIgnoreCase(typeName)) {
                 return type;
             }
         }

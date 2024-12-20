@@ -22,4 +22,6 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
     List<Classroom> findByBuildingAndFloor(String building, int floor);
 
+    boolean existsBySensorId(String sensorId);
+
 }
