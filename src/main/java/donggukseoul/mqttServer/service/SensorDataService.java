@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import donggukseoul.mqttServer.dto.SensorDataDTO;
 import donggukseoul.mqttServer.entity.SensorData;
+import donggukseoul.mqttServer.entity.SensorTypeEntity;
 import donggukseoul.mqttServer.enums.SensorType;
 import donggukseoul.mqttServer.enums.SortBy;
 import donggukseoul.mqttServer.enums.SortOrder;
@@ -11,6 +12,7 @@ import donggukseoul.mqttServer.exception.CustomException;
 import donggukseoul.mqttServer.exception.ErrorCode;
 import donggukseoul.mqttServer.repository.ClassroomRepository;
 import donggukseoul.mqttServer.repository.SensorDataRepository;
+import donggukseoul.mqttServer.repository.SensorTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +31,7 @@ public class SensorDataService {
 
     private final SensorDataRepository sensorDataRepository;
     private final ClassroomRepository classroomRepository;
+    private final SensorTypeRepository sensorTypeRepository;
 
     // 센서 데이터 가져오기
     public Map<String, Object> getSensorData(SensorType sensorType, SortBy sortBy, SortOrder order, int page, int size) {
@@ -69,17 +72,19 @@ public class SensorDataService {
 
     // 최근 센서 데이터 가져오기
     public Map<String, Object> getRecentSensorData(String sensorId) {
-        List<SensorData> recentData = sensorDataRepository.findTop10BySensorIdOrderByTimestampDesc(sensorId);
-
+        List<SensorTypeEntity> sensorTypes = sensorTypeRepository.findAll();
         Map<String, Object> groupedData = new HashMap<>();
 
-        recentData.forEach(data -> {
-            if ("AQMScores".equalsIgnoreCase(data.getSensorType())) {
-                groupedData.put("AQMScores", parseAqmScores(data));
-            } else {
-                groupedData.put(data.getSensorType(), convertToDTO(data));
+        for (SensorTypeEntity sensorType : sensorTypes) {
+            SensorData recentData = sensorDataRepository.findTopBySensorIdAndSensorTypeOrderByTimestampDesc(sensorId, sensorType.getTypeName());
+            if (recentData != null) {
+                if ("AQMScores".equalsIgnoreCase(recentData.getSensorType())) {
+                    groupedData.put("AQMScores", parseAqmScores(recentData));
+                } else {
+                    groupedData.put(recentData.getSensorType(), convertToDTO(recentData));
+                }
             }
-        });
+        }
 
         return groupedData;
     }
