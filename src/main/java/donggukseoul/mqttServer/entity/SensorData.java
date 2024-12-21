@@ -43,12 +43,13 @@ public class SensorData {
                 return 90.0;
             case "tvoc":
                 return 10000.0;
-            case "pm2.5":
+            case "pm2_5massconcentration":
                 return 64.0;
             case "ambientnoise":
                 return 80.0;
             default:
-                throw new IllegalArgumentException("Unknown sensor type: " + sensorType);
+                throw new IllegalArgumentException("Threshold not defined for sensor type: " + sensorType);
         }
     }
+
 }

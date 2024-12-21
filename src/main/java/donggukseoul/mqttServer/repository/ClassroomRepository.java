@@ -24,4 +24,6 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
     boolean existsBySensorId(String sensorId);
 
+    Optional<Classroom> findBySensorId(String sensorId);
+
 }

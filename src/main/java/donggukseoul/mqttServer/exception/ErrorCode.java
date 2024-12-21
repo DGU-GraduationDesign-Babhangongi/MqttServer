@@ -35,7 +35,8 @@ public enum ErrorCode {
     FLOOR_PLAN_NOT_FOUND(HttpStatus.NOT_FOUND, "FLOOR_PLAN-001", "Floor plan not found"),
 
     INVALID_SENSOR_TYPE(HttpStatus.BAD_REQUEST, "SENSOR-001", "Invalid sensor type"),
-    SENSOR_NOT_FOUND(HttpStatus.NOT_FOUND, "SENSOR-002", "Sensor not found"),;
+    SENSOR_NOT_FOUND(HttpStatus.NOT_FOUND, "SENSOR-002", "Sensor not found"),
+    PARSING_ERROR(HttpStatus.BAD_REQUEST, "SENSOR-003", "Parsing error"),;
 
 
     private final HttpStatus httpStatus;

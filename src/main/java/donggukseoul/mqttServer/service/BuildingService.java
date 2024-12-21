@@ -42,6 +42,7 @@ public class BuildingService {
     private final JWTUtil jwtUtil;
     private final TokenBlacklistService tokenBlacklistService;
     private final UserRepository userRepository;
+    private final JoinService joinService;
 
 
     @Value("${spring.cloud.gcp.storage.credentials.location}")
@@ -79,28 +80,30 @@ public class BuildingService {
         return convertToDetailDTOWithSensorCount(building);
     }
     public List<BuildingDetailDTO> getAllBuildingsForUser(HttpServletRequest request) throws ServletException, IOException {
-        User user = getUserFromRequest(request); // 요청에서 사용자 정보 추출
+
+        User user = joinService.getUserFromRequest(request); // 요청에서 사용자 정보 추출
         String userSchool = user.getSchool(); // 사용자 학교 정보 가져오기
 
+        // findBySchool 메서드가 List<Building>을 반환하므로 바로 처리 가능
         return buildingRepository.findBySchool(userSchool).stream()
                 .map(this::convertToDetailDTOWithSensorCount)
                 .collect(Collectors.toList());
     }
 
+
     // 요청에서 사용자 정보 추출
-    private User getUserFromRequest(HttpServletRequest request) throws ServletException, IOException {
-
-        String token = jwtUtil.validateToken(request, null, null, tokenBlacklistService);
-        if (token == null) {
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
-        }
-
-        // 토큰에서 username 획득
-        String username = jwtUtil.getUsername(token);
-
-        return userRepository.findOptionalByUsername(username)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    }
+//    public User getUserFromRequest(HttpServletRequest request) throws ServletException, IOException {
+//        String token = jwtUtil.validateToken(request,null,null, tokenBlacklistService);
+//        if (token == null) {
+//            throw new CustomException(ErrorCode.INVALID_TOKEN);
+//        }
+//
+//        //토큰에서 username과 role 획득
+//        String username = jwtUtil.getUsername(token);
+//
+//
+//        return userRepository.findByUsername(username);
+//    }
 
 
 

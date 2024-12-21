@@ -1,5 +1,7 @@
 package donggukseoul.mqttServer.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import donggukseoul.mqttServer.dto.SensorDataDTO;
 import donggukseoul.mqttServer.entity.SensorData;
 import donggukseoul.mqttServer.enums.SensorType;
@@ -69,10 +71,42 @@ public class SensorDataService {
     public Map<String, Object> getRecentSensorData(String sensorId) {
         List<SensorData> recentData = sensorDataRepository.findTop10BySensorIdOrderByTimestampDesc(sensorId);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("data", recentData.stream().map(this::convertToDTO).collect(Collectors.toList()));
-        return response;
+        Map<String, Object> groupedData = new HashMap<>();
+
+        recentData.forEach(data -> {
+            if ("AQMScores".equalsIgnoreCase(data.getSensorType())) {
+                groupedData.put("AQMScores", parseAqmScores(data));
+            } else {
+                groupedData.put(data.getSensorType(), convertToDTO(data));
+            }
+        });
+
+        return groupedData;
     }
+
+
+    private Map<String, Object> parseAqmScores(SensorData data) {
+        Map<String, Object> aqmScores = new HashMap<>();
+        aqmScores.put("sensorId", data.getSensorId());
+        aqmScores.put("timestamp", data.getTimestamp());
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(data.getValueString());
+
+            aqmScores.put("temperatureStatus", jsonNode.get("temperature").asText());
+            aqmScores.put("humidityStatus", jsonNode.get("humidity").asText());
+            aqmScores.put("tvocStatus", jsonNode.get("tvoc").asText());
+            aqmScores.put("pm25Status", jsonNode.get("PM2_5MassConcentration").asText());
+            aqmScores.put("ambientNoiseStatus", jsonNode.get("ambientNoise").asText());
+            aqmScores.put("co2Status", jsonNode.get("CO2").asText());
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.PARSING_ERROR);
+        }
+
+        return aqmScores;
+    }
+
 
     // 최근 센서 데이터 가져오기 (건물 및 강의실 이름 기반)
     public Map<String, Object> getRecentSensorDataByBuildingAndName(String building, String name) {
@@ -90,10 +124,25 @@ public class SensorDataService {
         List<SensorData> recentData = sensorDataRepository.findByTimestampAfter(oneHourAgo);
 
         return recentData.stream()
-                .filter(data -> data.getValue() > data.getThreshold())
+                .filter(data -> {
+                    try {
+                        // value가 null이면 필터링에서 제외
+                        if (data.getValue() == null) {
+                            return false;
+                        }
+                        // 임계값과 비교
+                        return data.getValue() > data.getThreshold();
+                    } catch (IllegalArgumentException e) {
+                        // Threshold가 정의되지 않은 타입은 필터링에서 제외
+                        return false;
+                    }
+                })
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
+
+
 
     public Map<String, Object> getCombinedSensorData(
             List<SensorType> sensorTypes,
@@ -148,11 +197,18 @@ public class SensorDataService {
 
     // DTO 변환 메서드
     private SensorDataDTO convertToDTO(SensorData sensorData) {
+        String building = classroomRepository.findBySensorId(sensorData.getSensorId()).get().getBuilding();
+        String name = classroomRepository.findBySensorId(sensorData.getSensorId()).get().getName();
+
         return SensorDataDTO.builder()
                 .sensorId(sensorData.getSensorId())
                 .sensorType(sensorData.getSensorType())
                 .value(sensorData.getValue())
                 .timestamp(sensorData.getTimestamp())
+                .building(building)
+                .name(name)
+                .level(null) // 필요하면 레벨 로직 추가
                 .build();
     }
+
 }
