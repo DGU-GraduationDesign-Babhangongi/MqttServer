@@ -35,21 +35,21 @@ public class SensorData {
 //    }
 
     // 센서 타입별 임계값 반환 메서드
-    public double getThreshold() {
-        switch (sensorType.toLowerCase()) {
-            case "temperature":
-                return 27.5; // 예제 임계값, 필요에 따라 수정
-            case "humidity":
-                return 90.0;
-            case "tvoc":
-                return 10000.0;
-            case "pm2_5massconcentration":
-                return 64.0;
-            case "ambientnoise":
-                return 80.0;
-            default:
-                throw new IllegalArgumentException("Threshold not defined for sensor type: " + sensorType);
-        }
-    }
+//    public double getThreshold() {
+//        switch (sensorType.toLowerCase()) {
+//            case "temperature":
+//                return 27.5; // 예제 임계값, 필요에 따라 수정
+//            case "humidity":
+//                return 90.0;
+//            case "tvoc":
+//                return 10000.0;
+//            case "pm2_5massconcentration":
+//                return 64.0;
+//            case "ambientnoise":
+//                return 80.0;
+//            default:
+//                throw new IllegalArgumentException("Threshold not defined for sensor type: " + sensorType);
+//        }
+//    }
 
 }

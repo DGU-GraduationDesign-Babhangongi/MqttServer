@@ -130,21 +130,13 @@ public class SensorDataService {
 
         return recentData.stream()
                 .filter(data -> {
-                    try {
-                        // value가 null이면 필터링에서 제외
-                        if (data.getValue() == null) {
-                            return false;
-                        }
-                        // 임계값과 비교
-                        return data.getValue() > data.getThreshold();
-                    } catch (IllegalArgumentException e) {
-                        // Threshold가 정의되지 않은 타입은 필터링에서 제외
-                        return false;
-                    }
+                    String level = getAbnormalLevel(data);
+                    return "RED".equals(level) || "ORANGE".equals(level) || "YELLOW".equals(level);
                 })
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
 
 
 
@@ -196,11 +188,63 @@ public class SensorDataService {
 
 
 
-    private boolean isAbnormal(SensorData data) {
-        return data.getValue() > data.getThreshold(); // 예제 조건, 실제 조건에 맞게 수정 필요
+//    private boolean isAbnormal(SensorData data) {
+//        return data.getValue() > data.getThreshold(); // 예제 조건, 실제 조건에 맞게 수정 필요
+//    }
+
+    private String getAbnormalLevel(SensorData data) {
+        Double value = data.getValue();
+        if (value == null) {
+            return null; // 값이 null인 경우 레벨을 설정하지 않음
+        }
+
+        String sensorType = data.getSensorType().toLowerCase();
+
+        switch (sensorType) {
+            case "temperature":
+                if (value < 16.5 || value > 27.5) return "RED";
+                if ((value >= 16.5 && value < 17.6) || (value > 26.4 && value <= 27.5)) return "ORANGE";
+                if ((value >= 17.6 && value < 18.7) || (value > 25.3 && value <= 26.4)) return "YELLOW";
+                if ((value >= 18.7 && value < 19.8) || (value > 24.2 && value <= 25.3)) return "GREEN";
+                if (value >= 19.8 && value <= 24.2) return "BLUE";
+                break;
+            case "humidity":
+                if (value < 10 || value > 90) return "RED";
+                if ((value >= 10 && value < 20) || (value > 80 && value <= 90)) return "ORANGE";
+                if ((value >= 20 && value < 30) || (value > 70 && value <= 80)) return "YELLOW";
+                if ((value >= 30 && value < 40) || (value > 60 && value <= 70)) return "GREEN";
+                if (value >= 40 && value <= 60) return "BLUE";
+                break;
+            case "tvoc":
+                if (value > 10000) return "RED";
+                if (value > 3000 && value <= 10000) return "ORANGE";
+                if (value > 1000 && value <= 3000) return "YELLOW";
+                if (value > 300 && value <= 1000) return "GREEN";
+                if (value <= 300) return "BLUE";
+                break;
+            case "pm2_5massconcentration":
+                if (value > 64) return "RED";
+                if (value > 53 && value <= 64) return "ORANGE";
+                if (value > 41 && value <= 53) return "YELLOW";
+                if (value > 23 && value <= 41) return "GREEN";
+                if (value <= 23) return "BLUE";
+                break;
+            case "ambientnoise":
+                if (value > 80) return "RED";
+                if (value > 70 && value <= 80) return "ORANGE";
+                if (value > 60 && value <= 70) return "YELLOW";
+                if (value > 50 && value <= 60) return "GREEN";
+                if (value <= 50) return "BLUE";
+                break;
+            default:
+                return null; // Unknown sensor type
+        }
+
+        return null; // Default case
     }
 
-    // DTO 변환 메서드
+
+
     private SensorDataDTO convertToDTO(SensorData sensorData) {
         String building = classroomRepository.findBySensorId(sensorData.getSensorId()).get().getBuilding();
         String name = classroomRepository.findBySensorId(sensorData.getSensorId()).get().getName();
@@ -212,7 +256,7 @@ public class SensorDataService {
                 .timestamp(sensorData.getTimestamp())
                 .building(building)
                 .name(name)
-                .level(null) // 필요하면 레벨 로직 추가
+                .level(getAbnormalLevel(sensorData)) // Level 설정
                 .build();
     }
 
