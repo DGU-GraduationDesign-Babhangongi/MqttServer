@@ -80,7 +80,9 @@ public class SchoolService {
         SchoolDTO dto = new SchoolDTO();
         dto.setId(school.getId());
         dto.setName(school.getName());
+        dto.setEnglishName(school.getEnglishName());
         dto.setLogoUrl(school.getLogoUrl());
+        dto.setAddress(school.getAddress());
         dto.setThemeColor(school.getThemeColor());
         return dto;
     }
