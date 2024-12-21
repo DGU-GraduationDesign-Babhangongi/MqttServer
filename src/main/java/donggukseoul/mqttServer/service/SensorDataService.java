@@ -126,16 +126,25 @@ public class SensorDataService {
     public List<SensorDataDTO> getAbnormalValuesOverTheLastHour() {
         LocalDateTime oneHourAgo = LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusHours(1);
 
-        List<SensorData> recentData = sensorDataRepository.findByTimestampAfter(oneHourAgo);
+        // 센서 타입별로 최신 이상수치만 조회
+        List<SensorDataDTO> abnormalData = new ArrayList<>();
 
-        return recentData.stream()
-                .filter(data -> {
-                    String level = getAbnormalLevel(data);
-                    return "RED".equals(level) || "ORANGE".equals(level) || "YELLOW".equals(level);
-                })
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<SensorTypeEntity> sensorTypes = sensorTypeRepository.findAll();
+        for (SensorTypeEntity sensorType : sensorTypes) {
+            SensorData latestData = sensorDataRepository.findTopBySensorTypeAndTimestampAfterOrderByTimestampDesc(
+                    sensorType.getTypeName(), oneHourAgo);
+
+            if (latestData != null) {
+                String level = getAbnormalLevel(latestData);
+                if ("RED".equals(level) || "ORANGE".equals(level) || "YELLOW".equals(level)) {
+                    abnormalData.add(convertToDTO(latestData));
+                }
+            }
+        }
+
+        return abnormalData;
     }
+
 
 
 
